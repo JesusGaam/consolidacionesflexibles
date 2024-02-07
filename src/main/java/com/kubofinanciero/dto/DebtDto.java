@@ -13,15 +13,15 @@ public class DebtDto {
    */
 
   // DEBT_CONDITION_STATUS
-  public static final int STATUS_ORIGINAL_DEBT = 1;
-  public static final int STATUS_INFO_UPDATED = 2;
-  public static final int STATUS_UPDATED_DEBT = 3;
+  public static final int STATUS_ORIGINAL_DEBT = 0;
+  public static final int STATUS_INFO_UPDATED = 1;
+  public static final int STATUS_UPDATED_DEBT = 2;
 
   public static final String REVOLVER_TRANSACTOR_TYPE = "Transactor";
   public static final String REVOLVER_LIGH_TYPE = "Ligh Revolver";
   public static final String REVOLVER_HIGH_TYPE = "High Revolver";
 
-  private long registro;
+  private long registry;
   private String financialEntity;
   private double amountAwarded;
   private double payment;
@@ -44,7 +44,7 @@ public class DebtDto {
   private boolean isSelected;
 
   public DebtDto(
-      long registro,
+      long registry,
       String financialEntity,
       double amountAwarded,
       double payment,
@@ -66,7 +66,7 @@ public class DebtDto {
       int statusDebt,
       boolean isSelected) {
 
-    this.registro = registro;
+    this.registry = registry;
     this.financialEntity = financialEntity;
     this.payment = payment;
     this.balance = balance;
@@ -89,8 +89,8 @@ public class DebtDto {
     this.isSelected = isSelected;
   }
 
-  public long getRegistro() {
-    return registro;
+  public long getRegistry() {
+    return registry;
   }
 
   public String getFinancialEntity() {
@@ -376,7 +376,7 @@ public class DebtDto {
   @Override
   public String toString() {
 
-    return "{\"registro\":" + registro + ", \"entidad\":\"" + financialEntity
+    return "{\"registro\":" + registry + ", \"entidad\":\"" + financialEntity
         + "\", \"cuota\":" + payment + ", \"saldo\":" + balance + ", \"monto_otorgado\":" + amountAwarded
         + ", \"tasa_externa\":" + externalRate + ", \"tasa_kubo\":" + kuboRate + ", \"numero_pagos_otorgado\":"
         + awardedPaymentTerms + ", \"numero_pagos_restante\":" + remainingPaymentTerms + ", \"frecuencia_externa\":\""

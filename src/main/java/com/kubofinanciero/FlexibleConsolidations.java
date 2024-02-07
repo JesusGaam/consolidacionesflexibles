@@ -3,7 +3,6 @@ package com.kubofinanciero;
 import com.kubofinanciero.dto.ConsolidationOfferDto;
 import com.kubofinanciero.dto.DebtDto;
 import com.kubofinanciero.dto.SimulatorOfferDto;
-import com.kubofinanciero.utils.JsonAdapter;
 
 public class FlexibleConsolidations {
 
@@ -127,10 +126,6 @@ public class FlexibleConsolidations {
     return consolidationOffer;
   }
 
-  // public void setOfferAmount(double offerAmount) {
-  // this.offerAmount = offerAmount;
-  // }
-
   public void setOfferRate(double offerRate) {
     double[] rates = consolidationOffer.getAssistedRates();
     double[] comissions = consolidationOffer.getCommissionRateList();
@@ -193,11 +188,11 @@ public class FlexibleConsolidations {
     updateOffer();
   }
 
-  private void updateOffer() {
+  public void updateOffer() {
     updateBuroDebtsStatistics();
     calculateOfferAmount();
     calculateWightedRate();
-    calculateOfferRate(false);
+    calculateOfferRate();
     calculateSaving();
     calculateMaxDebtsRate();
 
@@ -213,7 +208,6 @@ public class FlexibleConsolidations {
    */
   public void updateConsolidatedDebts() {
     for (DebtDto debt : consolidationOffer.getBuroDebts()) {
-      debt.validateConsolidatedDebt();
 
       if (debt.getConsolidatedDebt() && debt.getTypeDebt() == 'I') {
         debt.setSelected(true);
@@ -299,7 +293,7 @@ public class FlexibleConsolidations {
     this.maxDebtsRate = maxDebtsRate;
   }
 
-  public void calculateOfferRate(boolean defaultRate) {
+  public void calculateOfferRate() {
     double[] ratesList = consolidationOffer.getAssistedRates();
     double[] commissionsList = consolidationOffer.getCommissionRateList();
 
@@ -316,7 +310,7 @@ public class FlexibleConsolidations {
     double minFlexibleComission = commissionsList[commissionsList.length - 1];
     double flexibleRate = this.wightedRate * 0.9;
 
-    if (defaultRate || kuboRate * 1.1 <= this.wightedRate) {
+    if (kuboRate * 1.1 <= this.wightedRate) {
       this.offerRate = kuboRate;
       this.offerComission = kuboRateComission;
       this.offerStatus = STATUS_ORIGINAL_OFFER;
