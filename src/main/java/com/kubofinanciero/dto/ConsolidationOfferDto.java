@@ -275,9 +275,9 @@ public class ConsolidationOfferDto {
         + subLoanType + "\", \"cuota_min\":" + minPayment + ", \"cuota_max\":" + maxPayment + ", \"monto_min\":"
         + minAmount + ", \"monto_max\":" + maxAmount + ", \"plazo_min\":" + minPaymentTerm + ",\"plazo_max\":"
         + maxPaymentTerm + ", \"tasa\":" + rate + ", \"comision\":" + commissionRate + ", \"proba\":" + proba
-        + ", \"segmento\":" + segment + ", \"frecuencia\":" + frequencies + ", \"tasa_asistida\":["
-        + Arrays.toString(assistedRates) + "], \"comisiones\": [" + Arrays.toString(commissionRateList)
-        + "], \"deudas_buro\":" + buroDebts + " }]}";
+        + ", \"segmento\":" + segment + ", \"frecuencia\":" + frequencies + ", \"tasa_asistida\":"
+        + Arrays.toString(assistedRates) + ", \"comisiones\": " + Arrays.toString(commissionRateList)
+        + ", \"deudas_buro\":" + buroDebts + " }]}";
   }
 
 }

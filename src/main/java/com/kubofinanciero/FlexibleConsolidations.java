@@ -127,6 +127,10 @@ public class FlexibleConsolidations {
   }
 
   public void setOfferRate(double offerRate) {
+    if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
+      return;
+    }
+
     double[] rates = consolidationOffer.getAssistedRates();
     double[] comissions = consolidationOffer.getCommissionRateList();
 
@@ -134,6 +138,8 @@ public class FlexibleConsolidations {
       if (offerRate == rates[i]) {
         this.offerRate = rates[i];
         this.offerComission = comissions[i];
+        updateOfferRateOnBuroDebts();
+
         this.offerStatus = STATUS_RATE_MODIFIED_BY_ADVISOR;
         break;
       }
@@ -141,6 +147,10 @@ public class FlexibleConsolidations {
   }
 
   public void setOfferComission(double offerComission) {
+    if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
+      return;
+    }
+
     double[] rates = consolidationOffer.getAssistedRates();
     double[] comissions = consolidationOffer.getCommissionRateList();
 
@@ -148,9 +158,19 @@ public class FlexibleConsolidations {
       if (offerComission == comissions[i]) {
         this.offerRate = rates[i];
         this.offerComission = comissions[i];
+        updateOfferRateOnBuroDebts();
+
         this.offerStatus = STATUS_RATE_MODIFIED_BY_ADVISOR;
         break;
       }
+    }
+  }
+
+  public void removeRateModifiedByAdvisor() {
+    if (this.offerStatus == STATUS_RATE_MODIFIED_BY_ADVISOR) {
+      this.offerStatus = STATUS_RATE_AUTOMATICALLY_CALCULATED;
+      calculateOfferRate(false);
+      calculateSaving();
     }
   }
 
@@ -185,21 +205,25 @@ public class FlexibleConsolidations {
 
   public void initOffer() {
     updateConsolidatedDebts();
-    updateOffer();
+    updateOffer(true);
   }
 
-  public void updateOffer() {
+  private void updateOffer(boolean defaultRate) {
     updateBuroDebtsStatistics();
+    calculateMaxDebtsRate();
     calculateOfferAmount();
     calculateWightedRate();
-    calculateOfferRate();
+    calculateOfferRate(defaultRate);
     calculateSaving();
-    calculateMaxDebtsRate();
 
     simulatorOffer.setMinAmount(this.offerAmount);
     simulatorOffer.setMaxAmount(this.offerAmount);
     simulatorOffer.setRate(this.offerRate);
     simulatorOffer.setCommissionRate(this.offerComission);
+  }
+
+  public void updateOffer() {
+    updateOffer(false);
   }
 
   /**
@@ -252,6 +276,7 @@ public class FlexibleConsolidations {
     this.offerAmount = offerAmount;
 
     if (this.offerAmount > consolidationOffer.getMaxClientAmount()) {
+      System.out.println("MONTO EXCEDIDO");
       this.offerStatus = STATUS_EXCEEDED_AMOUNT;
     }
   }
@@ -293,7 +318,12 @@ public class FlexibleConsolidations {
     this.maxDebtsRate = maxDebtsRate;
   }
 
-  public void calculateOfferRate() {
+  public void calculateOfferRate(boolean defaultRate) {
+
+    if (this.offerStatus == STATUS_RATE_MODIFIED_BY_ADVISOR) {
+      return;
+    }
+
     double[] ratesList = consolidationOffer.getAssistedRates();
     double[] commissionsList = consolidationOffer.getCommissionRateList();
 
@@ -310,12 +340,16 @@ public class FlexibleConsolidations {
     double minFlexibleComission = commissionsList[commissionsList.length - 1];
     double flexibleRate = this.wightedRate * 0.9;
 
-    if (kuboRate * 1.1 <= this.wightedRate) {
+    if (defaultRate || kuboRate * 1.1 <= this.wightedRate) {
       this.offerRate = kuboRate;
       this.offerComission = kuboRateComission;
-      this.offerStatus = STATUS_ORIGINAL_OFFER;
-
       updateOfferRateOnBuroDebts();
+
+      if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
+        return;
+      }
+
+      this.offerStatus = STATUS_ORIGINAL_OFFER;
       return;
     }
 
@@ -337,8 +371,12 @@ public class FlexibleConsolidations {
       this.offerComission = minFlexibleComission;
     }
 
-    this.offerStatus = STATUS_RATE_AUTOMATICALLY_CALCULATED;
     updateOfferRateOnBuroDebts();
+    if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
+      return;
+    }
+
+    this.offerStatus = STATUS_RATE_AUTOMATICALLY_CALCULATED;
   }
 
   private void updateOfferRateOnBuroDebts() {

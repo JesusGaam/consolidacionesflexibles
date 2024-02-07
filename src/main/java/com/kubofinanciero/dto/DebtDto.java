@@ -174,7 +174,7 @@ public class DebtDto {
   }
 
   public DebtDto setFinancialEntity(String financialEntity) {
-    if (!editableDept()) {
+    if (!this.consolidatedDebt || !editableDept()) {
       return this;
     }
 
@@ -186,7 +186,7 @@ public class DebtDto {
   }
 
   public DebtDto setPayment(double payment) {
-    if (!editableDept()) {
+    if (!this.consolidatedDebt || !editableDept()) {
       return this;
     }
 
@@ -199,7 +199,7 @@ public class DebtDto {
   }
 
   public DebtDto setBalance(double balance) {
-    if (!editableDept()) {
+    if (!this.consolidatedDebt || !editableDept()) {
       return this;
     }
 
@@ -211,7 +211,7 @@ public class DebtDto {
   }
 
   public DebtDto setAmountAwarded(double amountAwarded) {
-    if (!editableDept()) {
+    if (!this.consolidatedDebt || !editableDept()) {
       return this;
     }
 
@@ -224,7 +224,7 @@ public class DebtDto {
   }
 
   public DebtDto setExternalRate(double externalRate) {
-    if (!editableDept()) {
+    if (!this.consolidatedDebt || !editableDept()) {
       return this;
     }
 
@@ -237,7 +237,7 @@ public class DebtDto {
   }
 
   public DebtDto setKuboRate(double kuboRate) {
-    if (!editableDept()) {
+    if (!this.consolidatedDebt || !editableDept()) {
       return this;
     }
 
@@ -247,7 +247,7 @@ public class DebtDto {
   }
 
   public DebtDto setAwardedPaymentTerms(int awardedPaymentTerms) {
-    if (!editableDept()) {
+    if (!this.consolidatedDebt || !editableDept()) {
       return this;
     }
 
@@ -261,7 +261,7 @@ public class DebtDto {
   }
 
   public DebtDto setRemainingPaymentTerms(int remainingPaymentTerms) {
-    if (!editableDept()) {
+    if (!this.consolidatedDebt || !editableDept()) {
       return this;
     }
 
@@ -272,7 +272,7 @@ public class DebtDto {
   }
 
   public DebtDto setExternalFrequency(char externalFrequency) {
-    if (!editableDept()) {
+    if (!this.consolidatedDebt || !editableDept()) {
       return this;
     }
 
@@ -285,7 +285,7 @@ public class DebtDto {
   }
 
   public DebtDto setStatusDebt(int statusDebt) {
-    if (!editableDept()) {
+    if (!this.consolidatedDebt || !editableDept()) {
       return this;
     }
 
@@ -294,7 +294,7 @@ public class DebtDto {
   }
 
   public DebtDto setSelected(boolean isSelected) {
-    if (!editableDept()) {
+    if (!this.consolidatedDebt || !editableDept()) {
       return this;
     }
     if (this.consolidatedDebt) {
@@ -335,7 +335,7 @@ public class DebtDto {
   public void calculateSavings() {
     LoanSimulator ls = new LoanSimulator();
 
-    if (!consolidatedDebt) {
+    if (!consolidatedDebt || this.typeDebt != 'I') {
       return;
     }
 
