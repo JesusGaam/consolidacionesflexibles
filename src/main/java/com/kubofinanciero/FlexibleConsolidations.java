@@ -4,6 +4,24 @@ import com.kubofinanciero.dto.ConsolidationOfferDto;
 import com.kubofinanciero.dto.DebtDto;
 import com.kubofinanciero.dto.SimulatorOfferDto;
 
+/*
+ * FlexibleConsolidations: Clase que contiene la logica principal de la oferta para consolidaciones flexibles
+ * Atributos:
+ *  offerAmount: Monto final de la oferta
+ *  offerRate: Tasa kubo final de oferta 
+ *  offerComission: Tasa de comision final de oferta
+ *  offerStatus: Status global de oferta 
+ *  wightedRate: Tasa ponderada (promedio), obtenida de las deudas seleccionadas
+ *  totalSaving: Ahorro total, obtenida de las deudas seleccionadas
+ *  monthlySavings: Ahorro mensual, obtenida de las deudas seleccionadas
+ *  monthlyExternalPayment: Es lo que el cliente esta pagando mensualmente de sus deudas seleccionadas
+ *  totalDiagnosableDebts: Numero de deudas consolidables
+ *  totalUndiagnosableDebts: Numero de dudas pueden ser consolidables pero el cliente no complemento la info
+ *  totalSelectedDebts: Numero de deudas seleccionadas 
+ *  maxDebtsRate: Tasa externa mas alta, obtenida de las deudas seleccionadas
+ * simulatorOffer: Objeto que funge como inputs para el simulador
+ * consolidationOffer: Objeto que almacena el estatus actual de la oferta entregada por data
+ */
 public class FlexibleConsolidations {
 
   public static final int STATUS_ORIGINAL_OFFER = 0;
@@ -126,6 +144,13 @@ public class FlexibleConsolidations {
     return consolidationOffer;
   }
 
+  /*
+   * Funcion que permite planchar la la comisión y tasas calculada
+   * automaticamnete.
+   * 
+   * @param offerRate Tasa que el asesor decide definir manualmente, solo se
+   * pueden agregar tasas que estan dentro de la lista de asistidas.
+   */
   public void setOfferRate(double offerRate) {
     if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
       return;
@@ -146,6 +171,14 @@ public class FlexibleConsolidations {
     }
   }
 
+  /*
+   * Funcion que permite planchar la la comisión y tasas calculada
+   * automaticamnete. Al agregar una comisión, asignará la tasa que corresmonde a
+   * la misma.
+   * 
+   * @param offerComission Comissión que el asesor decide definir manualmente,
+   * solo se pueden agregar comisiones que estan dentro de la lista de asistidas.
+   */
   public void setOfferComission(double offerComission) {
     if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
       return;
@@ -166,6 +199,10 @@ public class FlexibleConsolidations {
     }
   }
 
+  /*
+   * Elimina la tasa agregada manualmente por el asesor por la tasa generada
+   * automaticamenten por la logica del simulador.
+   */
   public void removeRateModifiedByAdvisor() {
     if (this.offerStatus == STATUS_RATE_MODIFIED_BY_ADVISOR) {
       this.offerStatus = STATUS_RATE_AUTOMATICALLY_CALCULATED;
@@ -184,6 +221,9 @@ public class FlexibleConsolidations {
     }
   }
 
+  /*
+   * Inicializa el objeto para el simulador de oferta
+   */
   public void setSimulatorOffer(ConsolidationOfferDto consolidationOffer) {
     if (consolidationOffer != null) {
       this.simulatorOffer = new SimulatorOfferDto(
@@ -203,11 +243,18 @@ public class FlexibleConsolidations {
     }
   }
 
+  /*
+   * Se debe de invocar para inicializar la oferta de consolidación
+   */
   public void initOffer() {
     updateConsolidatedDebts();
     updateOffer(true);
   }
 
+  /*
+   * Se debe de invocar cada cuando hay algun cambio de forma manual dentro de los
+   * parametros de esta clase o las deudas
+   */
   private void updateOffer(boolean defaultRate) {
     updateBuroDebtsStatistics();
     calculateMaxDebtsRate();
@@ -239,6 +286,10 @@ public class FlexibleConsolidations {
     }
   }
 
+  /*
+   * Se encarga de actualizar las estadisticas relacionadas a la lista de deudas
+   * consolidables
+   */
   public void updateBuroDebtsStatistics() {
     int totalDiagnosableDebts = 0;
     int totalUndiagnosableDebts = 0;
@@ -259,6 +310,10 @@ public class FlexibleConsolidations {
     this.totalSelectedDebts = totalSelectedDebts;
   }
 
+  /*
+   * Se encarga de calcular el monto de oferta de forma automatica, tomando como
+   * referencia las deudas seleccionadas.
+   */
   public void calculateOfferAmount() {
     double offerAmount = 0;
     for (DebtDto debt : consolidationOffer.getBuroDebts()) {
@@ -281,6 +336,10 @@ public class FlexibleConsolidations {
     }
   }
 
+  /*
+   * Calcula la tasa ponderada con respecto a la tasa externa de la lista de
+   * deudas seleccionadas.
+   */
   public void calculateWightedRate() {
     double amountRate = 0;
     double totalAmounts = 0;
@@ -308,6 +367,9 @@ public class FlexibleConsolidations {
     this.wightedRate = amountRate / totalAmounts;
   }
 
+  /*
+   * Estima la tasa externa mas cara de la lista de deudas seleccionadas
+   */
   public void calculateMaxDebtsRate() {
     double maxDebtsRate = 0;
     for (DebtDto debt : consolidationOffer.getBuroDebts()) {
@@ -318,6 +380,10 @@ public class FlexibleConsolidations {
     this.maxDebtsRate = maxDebtsRate;
   }
 
+  /*
+   * Calucla la tasa kubo de forma automatica, con respecto a la lista de tasas
+   * seleccionadas
+   */
   public void calculateOfferRate(boolean defaultRate) {
 
     if (this.offerStatus == STATUS_RATE_MODIFIED_BY_ADVISOR) {
@@ -379,12 +445,21 @@ public class FlexibleConsolidations {
     this.offerStatus = STATUS_RATE_AUTOMATICALLY_CALCULATED;
   }
 
+  /*
+   * Se encarga de actualizar la tasa kubo dentro de cada una de las deudas
+   * consolidables, cuando esta es calculada automaticamente o modificada
+   * manualmente por el asesor.
+   */
   private void updateOfferRateOnBuroDebts() {
     for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
       debt.setKuboRate(this.offerRate);
     }
   }
 
+  /*
+   * Calcula los ahorros dada la tasa externa, tasa kubo en la lista de deudas
+   * seleccionadas.
+   */
   public void calculateSaving() {
     double totalSaving = 0;
     double monthlySaving = 0;

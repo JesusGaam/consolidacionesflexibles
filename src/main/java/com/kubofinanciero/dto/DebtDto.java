@@ -173,6 +173,10 @@ public class DebtDto {
     return isSelected;
   }
 
+  /*
+   * Permite renombrar la entidad financiera, solo puede editarse para deudas
+   * consolidables y editables.
+   */
   public DebtDto setFinancialEntity(String financialEntity) {
     if (!this.consolidatedDebt || !editableDept()) {
       return this;
@@ -185,6 +189,10 @@ public class DebtDto {
     return this;
   }
 
+  /*
+   * Permite cambiar la cuota de la deuda, solo puede editarse para deudas
+   * consolidables y editables.
+   */
   public DebtDto setPayment(double payment) {
     if (!this.consolidatedDebt || !editableDept()) {
       return this;
@@ -198,6 +206,10 @@ public class DebtDto {
     return this;
   }
 
+  /*
+   * Permite cambiar el saldo de la deuda revolvente, solo puede editarse para
+   * deudas consolidables y editables.
+   */
   public DebtDto setBalance(double balance) {
     if (!this.consolidatedDebt || !editableDept()) {
       return this;
@@ -210,6 +222,10 @@ public class DebtDto {
     return this;
   }
 
+  /*
+   * Permite cambiar el monto otorgado por la institucion financiera, solo puede
+   * editarse para deudas consolidables y editables.
+   */
   public DebtDto setAmountAwarded(double amountAwarded) {
     if (!this.consolidatedDebt || !editableDept()) {
       return this;
@@ -223,6 +239,11 @@ public class DebtDto {
     return this;
   }
 
+  /*
+   * Permite cambiar la tasa externa, solo puede editarse para deudas
+   * consolidables y editables.
+   * NOTA: Este cambio requiere subir documento comprobatorio
+   */
   public DebtDto setExternalRate(double externalRate) {
     if (!this.consolidatedDebt || !editableDept()) {
       return this;
@@ -236,6 +257,11 @@ public class DebtDto {
     return this;
   }
 
+  /*
+   * Permite actualizar la tasa kubo asignada, solo puede editarse para deudas
+   * consolidables y editables.
+   * Se utiliza para calcular los ahorros.
+   */
   public DebtDto setKuboRate(double kuboRate) {
     if (!this.consolidatedDebt || !editableDept()) {
       return this;
@@ -246,6 +272,12 @@ public class DebtDto {
     return this;
   }
 
+  /*
+   * Permite actualizar el plazo de la deuda externa, solo puede editarse para
+   * deudas consolidables y editables.
+   * 
+   * NOTA: al actualizarse, se recalculan los ahorros y el progreso de la deuda.
+   */
   public DebtDto setAwardedPaymentTerms(int awardedPaymentTerms) {
     if (!this.consolidatedDebt || !editableDept()) {
       return this;
@@ -260,6 +292,13 @@ public class DebtDto {
     return this;
   }
 
+  /*
+   * Permite actualizar el plazo restante de la deuda externa, solo puede editarse
+   * para deudas
+   * consolidables y editables.
+   * 
+   * NOTA: Al actualizarse, se recalculan los ahorros y el progreso de la deuda.
+   */
   public DebtDto setRemainingPaymentTerms(int remainingPaymentTerms) {
     if (!this.consolidatedDebt || !editableDept()) {
       return this;
@@ -271,6 +310,12 @@ public class DebtDto {
     return this;
   }
 
+  /*
+   * Permite actualizar la frecuencia externa, solo puede editarse
+   * para deudas consolidables y editables.
+   * 
+   * NOTA: Al actualizarse, se recalculan los ahorros.
+   */
   public DebtDto setExternalFrequency(char externalFrequency) {
     if (!this.consolidatedDebt || !editableDept()) {
       return this;
@@ -284,6 +329,10 @@ public class DebtDto {
     return this;
   }
 
+  /*
+   * Permite actualizar el estatus de la deuda, solo puede editarse
+   * para deudas consolidables y editables.
+   */
   public DebtDto setStatusDebt(int statusDebt) {
     if (!this.consolidatedDebt || !editableDept()) {
       return this;
@@ -293,6 +342,9 @@ public class DebtDto {
     return this;
   }
 
+  /*
+   * Permite seleccionar la deuda siempre y cuando sean consolidables y editables.
+   */
   public DebtDto setSelected(boolean isSelected) {
     if (!this.consolidatedDebt || !editableDept()) {
       return this;
@@ -303,6 +355,9 @@ public class DebtDto {
     return this;
   }
 
+  /*
+   * FUNCION DEPRECIADA para validar si la deuda es consolidable
+   */
   public void validateConsolidatedDebt() {
     if (typeDebt != 'R' && typeDebt != 'I') {
       consolidatedDebt = false;
@@ -332,6 +387,9 @@ public class DebtDto {
     consolidatedDebt = false;
   }
 
+  /**
+   * Calcula los ahorros para deudas de pagos fijos
+   */
   public void calculateSavings() {
     LoanSimulator ls = new LoanSimulator();
 
@@ -361,6 +419,10 @@ public class DebtDto {
     }
   }
 
+  /**
+   * Calcula el avance de la deuda externa, toma en cuenta el plazo total y el
+   * numero de pagos realizados
+   */
   public void calculateProgress() {
     this.progress = remainingPaymentTerms / awardedPaymentTerms;
   }

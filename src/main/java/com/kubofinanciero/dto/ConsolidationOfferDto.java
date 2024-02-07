@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/*
+ * ConsolidationOfferDto Clase que alamacena la oferta de consolidacion otorgada por data
+/* */
 public class ConsolidationOfferDto {
   /**
    * INPUTS MODELO DE RIESGOS
