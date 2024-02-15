@@ -153,8 +153,7 @@ public class SimulatorOfferDto {
     this.frequencies = frequencies;
   }
 
-  @Override
-  public String toString() {
+  private String frequenciesToString() {
     String frequencies = "";
     for (int i = 0; i < this.frequencies.length; i++) {
       frequencies += "\"" + this.frequencies[i] + "\"";
@@ -162,11 +161,35 @@ public class SimulatorOfferDto {
         frequencies += ",";
       }
     }
-    frequencies = "[" + frequencies + "]";
-    return "{\"loan_type\": \"" + loanType + "\", \"sub_loan_type\": \"" + subLoanType + "\", \"monto_min\": "
-        + minAmount + ", \"monto_max\": " + maxAmount + ", \"cuota_min\": " + minPayment + ", \"cuota_max\": "
-        + maxPayment + ", \"plazo_min\": " + minPaymentTerm + ", \"plazo_max\": " + maxPaymentTerm + ", \"tasa\": "
-        + rate + ", \"comision\": " + commissionRate + ", \"frecuencia\": " + frequencies + "}";
+    return "[" + frequencies + "]";
   }
 
+  public String toJSONString() {
+    return "{\"loanType\": \"" + loanType +
+        "\", \"subLoanType\": \"" + subLoanType +
+        "\", \"minAmount\": " + minAmount +
+        ", \"maxAmount\": " + maxAmount +
+        ", \"minPayment\": " + minPayment +
+        ", \"maxPayment\": " + maxPayment +
+        ", \"minPaymentTerm\": " + minPaymentTerm +
+        ", \"maxPaymentTerm\": " + maxPaymentTerm +
+        ", \"rate\": " + rate +
+        ", \"commissionRate\": " + commissionRate +
+        ", \"frequencies\": " + frequenciesToString() + "}";
+  }
+
+  @Override
+  public String toString() {
+    return "{\"loan_type\": \"" + loanType +
+        "\", \"sub_loan_type\": \"" + subLoanType +
+        "\", \"monto_min\": " + minAmount +
+        ", \"monto_max\": " + maxAmount +
+        ", \"cuota_min\": " + minPayment +
+        ", \"cuota_max\": " + maxPayment +
+        ", \"plazo_min\": " + minPaymentTerm +
+        ", \"plazo_max\": " + maxPaymentTerm +
+        ", \"tasa\": " + rate +
+        ", \"comision\": " + commissionRate +
+        ", \"frecuencia\": " + frequenciesToString() + "}";
+  }
 }
