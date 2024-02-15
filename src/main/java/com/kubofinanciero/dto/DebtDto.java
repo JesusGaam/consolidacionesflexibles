@@ -435,19 +435,55 @@ public class DebtDto {
     return true;
   }
 
+  public String toJSONString() {
+
+    return "{\"registry\":" + registry +
+        ", \"financialEntity\":\"" + financialEntity +
+        "\", \"amountAwarded\":" + amountAwarded +
+        ", \"payment\":" + payment +
+        ", \"balance\":" + balance +
+        ", \"externalRate\":" + externalRate +
+        ", \"kuboRate\":" + kuboRate +
+        ", \"awardedPaymentTerms\":" + awardedPaymentTerms +
+        ", \"remainingPaymentTerms\":" + remainingPaymentTerms +
+        ", \"externalFrequency\":\"" + externalFrequency +
+        "\", \"progress\":" + progress +
+        ", \"startDate\":\"" + startDate +
+        "\", \"typeDebt\": \"" + typeDebt +
+        "\", \"monthlySaving\":" + monthlySaving +
+        ", \"totalSaving\":" + totalSaving +
+        ", \"statusRate\":\"" + statusRate +
+        "\", \"revolverType\":\"" + revolverType +
+        "\", \"consolidatedDebt\": " + (consolidatedDebt ? 1 : 0) +
+        ", \"remainingTotalSavings\":" + remainingTotalSavings +
+        ", \"statusDebt\":" + statusDebt +
+        ", \"isSelected\":" + isSelected + "}";
+  }
+
   @Override
   public String toString() {
 
-    return "{\"registro\":" + registry + ", \"entidad\":\"" + financialEntity
-        + "\", \"cuota\":" + payment + ", \"saldo\":" + balance + ", \"monto_otorgado\":" + amountAwarded
-        + ", \"tasa_externa\":" + externalRate + ", \"tasa_kubo\":" + kuboRate + ", \"numero_pagos_otorgado\":"
-        + awardedPaymentTerms + ", \"numero_pagos_restante\":" + remainingPaymentTerms + ", \"frecuencia_externa\":\""
-        + externalFrequency + "\", \"avance\":" + progress + ", \"fecha_inicio\":\"" + startDate
-        + "\", \"ahorro_cuota_mensual\":" + monthlySaving + ", \"ahorro_total\":" + totalSaving
-        + ", \"ahorro_total_restante\":" + remainingTotalSavings + ", \"tipo_deuda\": \"" + typeDebt
-        + "\", \"deuda_consolidable\": " + (consolidatedDebt ? 1 : 0) + ", \"estatus_deuda\":" + statusDebt
-        + ", \"estatus_tasa\":\"" + statusRate + "\", \"tipo_revolvencia\":\"" + revolverType + "\", \"seleccionado\":"
-        + isSelected + "}";
+    return "{\"registro\":" + registry +
+        ", \"entidad\":\"" + financialEntity +
+        "\", \"monto_otorgado\":" + amountAwarded +
+        ", \"cuota\":" + payment +
+        ", \"saldo\":" + balance +
+        ", \"tasa_externa\":" + externalRate +
+        ", \"tasa_kubo\":" + kuboRate +
+        ", \"numero_pagos_otorgado\":" + awardedPaymentTerms +
+        ", \"numero_pagos_restante\":" + remainingPaymentTerms +
+        ", \"frecuencia_externa\":\"" + externalFrequency +
+        "\", \"avance\":" + progress +
+        ", \"fecha_inicio\":\"" + startDate +
+        "\", \"tipo_deuda\": \"" + typeDebt +
+        "\", \"ahorro_cuota_mensual\":" + monthlySaving +
+        ", \"ahorro_total\":" + totalSaving +
+        ", \"estatus_tasa\":\"" + statusRate +
+        "\", \"tipo_revolvencia\":\"" + revolverType +
+        "\", \"deuda_consolidable\": " + (consolidatedDebt ? 1 : 0) +
+        ", \"ahorro_total_restante\":" + remainingTotalSavings +
+        ", \"estatus_deuda\":" + statusDebt +
+        ", \"seleccionado\":" + isSelected + "}";
   }
 
 }
