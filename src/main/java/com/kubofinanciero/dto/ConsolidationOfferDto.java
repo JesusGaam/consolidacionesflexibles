@@ -261,9 +261,7 @@ public class ConsolidationOfferDto {
     }
   }
 
-  @Override
-  public String toString() {
-
+  private String frequenciesToString() {
     String frequencies = "";
     for (int i = 0; i < this.frequencies.length; i++) {
       frequencies += "\"" + this.frequencies[i] + "\"";
@@ -271,16 +269,64 @@ public class ConsolidationOfferDto {
         frequencies += ",";
       }
     }
-    frequencies = "[" + frequencies + "]";
+    return "[" + frequencies + "]";
+  }
 
-    return "{ \"Prospecto\":" + prospectusId + ", \"monto_maximo_cliente\":" + maxClientAmount + ", \"bursolnum\":"
-        + bursolnum + ", \"Oferta Automatico\":[" + "{\"loan_type\": \"" + loanType + "\", \"sub_loan_type\": \""
-        + subLoanType + "\", \"cuota_min\":" + minPayment + ", \"cuota_max\":" + maxPayment + ", \"monto_min\":"
-        + minAmount + ", \"monto_max\":" + maxAmount + ", \"plazo_min\":" + minPaymentTerm + ",\"plazo_max\":"
-        + maxPaymentTerm + ", \"tasa\":" + rate + ", \"comision\":" + commissionRate + ", \"proba\":" + proba
-        + ", \"segmento\":" + segment + ", \"frecuencia\":" + frequencies + ", \"tasa_asistida\":"
-        + Arrays.toString(assistedRates) + ", \"comisiones\": " + Arrays.toString(commissionRateList)
-        + ", \"deudas_buro\":" + buroDebts + " }]}";
+  public String buroDebtsToJSONString() {
+    String buroDebts = "";
+    for (int i = 0; i < this.buroDebts.size(); i++) {
+      buroDebts += this.buroDebts.get(i).toJSONString() + ",";
+    }
+    return ("[" + buroDebts + "]").replace(",]", "]");
+  }
+
+  public String toJSONString() {
+    return "{ \"prospectusId\":" + prospectusId +
+        ", \"maxClientAmount\":" + maxClientAmount +
+        ", \"bursolnum\":" + bursolnum +
+        ", \"automaticOffer\":[" +
+        "{\"loanType\": \"" + loanType +
+        "\", \"subLoanType\": \"" + subLoanType +
+        "\", \"minPayment\":" + minPayment +
+        ", \"maxPayment\":" + maxPayment +
+        ", \"minAmount\":" + minAmount +
+        ", \"maxAmount\":" + maxAmount +
+        ", \"minPaymentTerm\":" + minPaymentTerm +
+        ",\"maxPaymentTerm\":" + maxPaymentTerm +
+        ", \"rate\":" + rate +
+        ", \"commissionRate\":" + commissionRate +
+        ", \"proba\":" + proba +
+        ", \"segment\":" + segment +
+        ", \"frequencies\":" + frequenciesToString() +
+        ", \"assistedRates\":" + Arrays.toString(assistedRates) +
+        ", \"commissionRateList\": " + Arrays.toString(commissionRateList) +
+        ", \"buroDebts\":" + buroDebtsToJSONString() +
+        " }]}";
+  }
+
+  @Override
+  public String toString() {
+    return "{ \"Prospecto\":" + prospectusId +
+        ", \"monto_maximo_cliente\":" + maxClientAmount +
+        ", \"bursolnum\":" + bursolnum +
+        ", \"Oferta Automatico\":[" +
+        "{\"loan_type\": \"" + loanType +
+        "\", \"sub_loan_type\": \"" + subLoanType +
+        "\", \"cuota_min\":" + minPayment +
+        ", \"cuota_max\":" + maxPayment +
+        ", \"monto_min\":" + minAmount +
+        ", \"monto_max\":" + maxAmount +
+        ", \"plazo_min\":" + minPaymentTerm +
+        ",\"plazo_max\":" + maxPaymentTerm +
+        ", \"tasa\":" + rate +
+        ", \"comision\":" + commissionRate +
+        ", \"proba\":" + proba +
+        ", \"segmento\":" + segment +
+        ", \"frecuencia\":" + frequenciesToString() +
+        ", \"tasa_asistida\":" + Arrays.toString(assistedRates) +
+        ", \"comisiones\": " + Arrays.toString(commissionRateList) +
+        ", \"deudas_buro\":" + buroDebts +
+        " }]}";
   }
 
 }
