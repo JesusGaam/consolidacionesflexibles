@@ -95,8 +95,10 @@ public class DebtDto {
     typeDebtList.put('I', "Crédito personal");
     typeDebtList.put('R', "Tarjeta de crédito");
     typeDebtList.put('M', "Hipoteca");
-    typeDebtList.put('O', "Híbrido");
-    typeDebtList.put('X', "Personas morales");
+    // O: Son creditos no tienen linea definida (p.ej: telefonia, internet, etc)
+    typeDebtList.put('O', "Servicios");
+    // X.Se refiere a creditos para personas morales o fisicas con Act. empresarial
+    typeDebtList.put('X', "Crédito empresarial");
 
     typeDebtName = typeDebtList.get(typeDebt);
     if (typeDebtName == null) {
