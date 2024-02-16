@@ -77,10 +77,16 @@ public class ConsolidationOfferDto {
   }
 
   public String getLoanType() {
+    if (loanType == null) {
+      loanType = "";
+    }
     return loanType;
   }
 
   public String getSubLoanType() {
+    if (subLoanType == null) {
+      subLoanType = "";
+    }
     return subLoanType;
   }
 
@@ -125,26 +131,29 @@ public class ConsolidationOfferDto {
   }
 
   public char[] getFrequencies() {
+    if (frequencies == null) {
+      frequencies = new char[] {};
+    }
     return frequencies;
   }
 
   public double[] getAssistedRates() {
     if (assistedRates == null) {
-      assistedRates = new double[] {};
+      assistedRates = new double[] { 0 };
     }
     return assistedRates;
   }
 
   public double[] getCommissionRateList() {
     if (commissionRateList == null) {
-      commissionRateList = new double[] {};
+      commissionRateList = new double[] { 0 };
     }
     return commissionRateList;
   }
 
   public List<DebtDto> getBuroDebts() {
-    if (buroDebts == null) {
-      buroDebts = new ArrayList<DebtDto>();
+    if (this.buroDebts == null) {
+      this.buroDebts = new ArrayList<DebtDto>();
     }
     return buroDebts;
   }
@@ -263,9 +272,9 @@ public class ConsolidationOfferDto {
 
   private String frequenciesToString() {
     String frequencies = "";
-    for (int i = 0; i < this.frequencies.length; i++) {
-      frequencies += "\"" + this.frequencies[i] + "\"";
-      if (i < this.frequencies.length - 1) {
+    for (int i = 0; i < getFrequencies().length; i++) {
+      frequencies += "\"" + getFrequencies()[i] + "\"";
+      if (i < getFrequencies().length - 1) {
         frequencies += ",";
       }
     }
@@ -310,8 +319,8 @@ public class ConsolidationOfferDto {
         ", \"monto_maximo_cliente\":" + maxClientAmount +
         ", \"bursolnum\":" + bursolnum +
         ", \"Oferta Automatico\":[" +
-        "{\"loan_type\": \"" + loanType +
-        "\", \"sub_loan_type\": \"" + subLoanType +
+        "{\"loan_type\": \"" + getLoanType() +
+        "\", \"sub_loan_type\": \"" + getSubLoanType() +
         "\", \"cuota_min\":" + minPayment +
         ", \"cuota_max\":" + maxPayment +
         ", \"monto_min\":" + minAmount +

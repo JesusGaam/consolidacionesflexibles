@@ -1,5 +1,7 @@
 package com.kubofinanciero.dto;
 
+import java.util.HashMap;
+
 import com.kubofinanciero.utils.LoanSimulator;
 
 public class DebtDto {
@@ -34,6 +36,7 @@ public class DebtDto {
   private double progress;
   private String startDate;
   private char typeDebt;
+  private String typeDebtName;
   private double monthlySaving;
   private double totalSaving;
   private String statusRate;
@@ -87,6 +90,18 @@ public class DebtDto {
     this.consolidatedDebt = consolidatedDebt;
     this.statusDebt = statusDebt;
     this.isSelected = isSelected;
+
+    HashMap<Character, String> typeDebtList = new HashMap<Character, String>();
+    typeDebtList.put('I', "Crédito personal");
+    typeDebtList.put('R', "Tarjeta de crédito");
+    typeDebtList.put('M', "Hipoteca");
+    typeDebtList.put('O', "Híbrido");
+    typeDebtList.put('X', "Personas morales");
+
+    typeDebtName = typeDebtList.get(typeDebt);
+    if (typeDebtName == null) {
+      typeDebtName = "No clasificado";
+    }
   }
 
   public long getRegistry() {
@@ -94,7 +109,11 @@ public class DebtDto {
   }
 
   public String getFinancialEntity() {
+    if (financialEntity == null) {
+      financialEntity = "";
+    }
     return financialEntity;
+
   }
 
   public double getPayment() {
@@ -134,6 +153,9 @@ public class DebtDto {
   }
 
   public String getStartDate() {
+    if (startDate == null) {
+      startDate = "";
+    }
     return startDate;
   }
 
@@ -150,6 +172,9 @@ public class DebtDto {
   }
 
   public String getStatusRate() {
+    if (statusRate == null) {
+      statusRate = "";
+    }
     return statusRate;
   }
 
@@ -163,6 +188,10 @@ public class DebtDto {
 
   public char getTypeDebt() {
     return typeDebt;
+  }
+
+  public String getTypeDebtName() {
+    return typeDebtName;
   }
 
   public int getStatusDebt() {
@@ -439,9 +468,9 @@ public class DebtDto {
 
     return "{\"registry\":" + registry +
         ", \"financialEntity\":\"" + financialEntity +
-        "\", \"amountAwarded\":" + amountAwarded +
-        ", \"payment\":" + payment +
-        ", \"balance\":" + balance +
+        "\", \"amountAwarded\":" + LoanSimulator.round(amountAwarded, 2) +
+        ", \"payment\":" + LoanSimulator.round(payment, 2) +
+        ", \"balance\":" + LoanSimulator.round(balance, 2) +
         ", \"externalRate\":" + externalRate +
         ", \"kuboRate\":" + kuboRate +
         ", \"awardedPaymentTerms\":" + awardedPaymentTerms +
@@ -450,12 +479,13 @@ public class DebtDto {
         "\", \"progress\":" + progress +
         ", \"startDate\":\"" + startDate +
         "\", \"typeDebt\": \"" + typeDebt +
-        "\", \"monthlySaving\":" + monthlySaving +
-        ", \"totalSaving\":" + totalSaving +
+        "\", \"typeDebtName\": \"" + typeDebtName +
+        "\", \"monthlySaving\":" + LoanSimulator.round(monthlySaving, 2) +
+        ", \"totalSaving\":" + LoanSimulator.round(totalSaving, 2) +
         ", \"statusRate\":\"" + statusRate +
         "\", \"revolverType\":\"" + revolverType +
         "\", \"consolidatedDebt\": " + (consolidatedDebt ? 1 : 0) +
-        ", \"remainingTotalSavings\":" + remainingTotalSavings +
+        ", \"remainingTotalSavings\":" + LoanSimulator.round(remainingTotalSavings, 2) +
         ", \"statusDebt\":" + statusDebt +
         ", \"isSelected\":" + isSelected + "}";
   }
@@ -476,6 +506,7 @@ public class DebtDto {
         "\", \"avance\":" + progress +
         ", \"fecha_inicio\":\"" + startDate +
         "\", \"tipo_deuda\": \"" + typeDebt +
+        "\", \"typeDebtName\": \"" + typeDebtName +
         "\", \"ahorro_cuota_mensual\":" + monthlySaving +
         ", \"ahorro_total\":" + totalSaving +
         ", \"estatus_tasa\":\"" + statusRate +

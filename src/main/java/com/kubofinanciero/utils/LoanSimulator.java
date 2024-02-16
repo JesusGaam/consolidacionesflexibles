@@ -126,7 +126,7 @@ public class LoanSimulator {
     return amortizationTable;
   }
 
-  public double round(double number, int nDigits) {
+  public static double round(double number, int nDigits) {
     nDigits = nDigits > 0 ? (int) Math.pow(10, nDigits) : 1;
     return (double) Math.round(number * nDigits) / nDigits;
   };

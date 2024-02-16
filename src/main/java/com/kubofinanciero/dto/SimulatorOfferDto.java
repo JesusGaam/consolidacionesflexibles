@@ -62,10 +62,16 @@ public class SimulatorOfferDto {
   }
 
   public String getLoanType() {
+    if (loanType == null) {
+      loanType = "";
+    }
     return loanType;
   }
 
   public String getSubLoanType() {
+    if (subLoanType == null) {
+      subLoanType = "";
+    }
     return subLoanType;
   }
 
@@ -106,6 +112,9 @@ public class SimulatorOfferDto {
   }
 
   public char[] getFrequencies() {
+    if (frequencies == null) {
+      frequencies = new char[] {};
+    }
     return frequencies;
   }
 
@@ -155,9 +164,9 @@ public class SimulatorOfferDto {
 
   private String frequenciesToString() {
     String frequencies = "";
-    for (int i = 0; i < this.frequencies.length; i++) {
-      frequencies += "\"" + this.frequencies[i] + "\"";
-      if (i < this.frequencies.length - 1) {
+    for (int i = 0; i < getFrequencies().length; i++) {
+      frequencies += "\"" + getFrequencies()[i] + "\"";
+      if (i < getFrequencies().length - 1) {
         frequencies += ",";
       }
     }
@@ -165,8 +174,8 @@ public class SimulatorOfferDto {
   }
 
   public String toJSONString() {
-    return "{\"loanType\": \"" + loanType +
-        "\", \"subLoanType\": \"" + subLoanType +
+    return "{\"loanType\": \"" + getLoanType() +
+        "\", \"subLoanType\": \"" + getSubLoanType() +
         "\", \"minAmount\": " + minAmount +
         ", \"maxAmount\": " + maxAmount +
         ", \"minPayment\": " + minPayment +
@@ -180,8 +189,8 @@ public class SimulatorOfferDto {
 
   @Override
   public String toString() {
-    return "{\"loan_type\": \"" + loanType +
-        "\", \"sub_loan_type\": \"" + subLoanType +
+    return "{\"loan_type\": \"" + getLoanType() +
+        "\", \"sub_loan_type\": \"" + getSubLoanType() +
         "\", \"monto_min\": " + minAmount +
         ", \"monto_max\": " + maxAmount +
         ", \"cuota_min\": " + minPayment +

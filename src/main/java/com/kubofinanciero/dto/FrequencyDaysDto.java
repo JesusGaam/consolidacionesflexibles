@@ -42,8 +42,10 @@ public class FrequencyDaysDto {
 
   @Override
   public String toString() {
-    return "{\"frequency\":" + frequency + ", \"days\":" + days + ", \"periodsPerYear\":" + periodsPerYear
-        + ", \"daysOfYear\":" + daysOfYear + "}";
+    return "{\"frequency\": \"" + frequency +
+        "\" , \"days\":" + days +
+        ", \"periodsPerYear\":" + periodsPerYear +
+        ", \"daysOfYear\":" + daysOfYear + "}";
   }
 
 }

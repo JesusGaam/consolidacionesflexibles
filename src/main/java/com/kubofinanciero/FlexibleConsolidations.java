@@ -3,6 +3,7 @@ package com.kubofinanciero;
 import com.kubofinanciero.dto.ConsolidationOfferDto;
 import com.kubofinanciero.dto.DebtDto;
 import com.kubofinanciero.dto.SimulatorOfferDto;
+import com.kubofinanciero.utils.LoanSimulator;
 
 /*
  * FlexibleConsolidations: Clase que contiene la logica principal de la oferta para consolidaciones flexibles
@@ -11,16 +12,24 @@ import com.kubofinanciero.dto.SimulatorOfferDto;
  *  offerRate: Tasa kubo final de oferta 
  *  offerComission: Tasa de comision final de oferta
  *  offerStatus: Status global de oferta 
- *  wightedRate: Tasa ponderada (promedio), obtenida de las deudas seleccionadas
+ *  weightedRate: Tasa ponderada (promedio), obtenida de las deudas seleccionadas
+ *  weightedRateType: Tipo de tasa ponderada, determina si para el calculo de la tasa ponderada se conocieron todas las tasas de las deudas
  *  totalSaving: Ahorro total, obtenida de las deudas seleccionadas
  *  monthlySavings: Ahorro mensual, obtenida de las deudas seleccionadas
+ *  totalSavingAllDebts: Ahorro total, obtenida de las deudas consolidables seleccionadas y no seleccionadas.
+ *  monthlySavingAllDebts: Ahorro mensual, obtenida de las deudas consolidables seleccionadas y no seleccionadas
+ *  totalSavingMissingDebts: Ahorro total, de las deudas NO seleccionadas
+ *  monthlySavingsMissingDebts: Ahorro mensual, obtenida de las deudas NO seleccionadas
+ *  totalAmountToConsolidate: Es el monto total de las deudsa consolidables sin importar que esten seleccionadas o no.
+ *  excedentAmount : El Colchoncito es lo que le sobrara despues de pagar todas sus deudas. Se calcula restando el saldo del monto otorgado,
+ *  consolidableMissingAmount: Monto restante para consolidar, es el monto a consolidar de las deudas no seleccionadas. 
  *  monthlyExternalPayment: Es lo que el cliente esta pagando mensualmente de sus deudas seleccionadas
  *  totalDiagnosableDebts: Numero de deudas consolidables
  *  totalUndiagnosableDebts: Numero de dudas pueden ser consolidables pero el cliente no complemento la info
  *  totalSelectedDebts: Numero de deudas seleccionadas 
  *  maxDebtsRate: Tasa externa mas alta, obtenida de las deudas seleccionadas
- * simulatorOffer: Objeto que funge como inputs para el simulador
- * consolidationOffer: Objeto que almacena el estatus actual de la oferta entregada por data
+ *  simulatorOffer: Objeto que funge como inputs para el simulador
+ *  consolidationOffer: Objeto que almacena el estatus actual de la oferta entregada por data
  */
 public class FlexibleConsolidations {
 
@@ -29,13 +38,25 @@ public class FlexibleConsolidations {
   public static final int STATUS_RATE_MODIFIED_BY_ADVISOR = 2;
   public static final int STATUS_EXCEEDED_AMOUNT = 3;
 
+  public static final int WEIGHTED_RATE_TYPE_MIXED = 0;
+  public static final int WEIGHTED_RATE_TYPE_KNOWN = 1;
+  public static final int WEIGHTED_RATE_TYPE_UNKNOWN = 2;
+
   private double offerAmount;
   private double offerRate;
   private double offerComission;
   private int offerStatus;
-  private double wightedRate;
+  private double weightedRate;
+  private int weightedRateType;
   private double totalSaving;
   private double monthlySavings;
+  private double totalSavingAllDebts;
+  private double monthlySavingAllDebts;
+  private double totalSavingMissingDebts;
+  private double monthlySavingsMissingDebts;
+  private double totalAmountToConsolidate;
+  private double excedentAmount;
+  private double consolidableMissingAmount;
   private double monthlyExternalPayment;
   private int totalDiagnosableDebts;
   private int totalUndiagnosableDebts;
@@ -55,7 +76,7 @@ public class FlexibleConsolidations {
       double offerRate,
       double offerComission,
       int offerStatus,
-      double wightedRate,
+      double weightedRate,
       double totalSaving,
       double monthlySavings,
       double monthlyExternalPayment,
@@ -69,7 +90,7 @@ public class FlexibleConsolidations {
     this.offerRate = offerRate;
     this.offerComission = offerComission;
     this.offerStatus = offerStatus;
-    this.wightedRate = wightedRate;
+    this.weightedRate = weightedRate;
     this.totalSaving = totalSaving;
     this.monthlySavings = monthlySavings;
     this.monthlyExternalPayment = monthlyExternalPayment;
@@ -96,8 +117,12 @@ public class FlexibleConsolidations {
     return offerStatus;
   }
 
-  public double getWightedRate() {
-    return wightedRate;
+  public double getWeightedRate() {
+    return weightedRate;
+  }
+
+  public double getWeightedRateType() {
+    return weightedRateType;
   }
 
   public double getTotalSaving() {
@@ -106,6 +131,34 @@ public class FlexibleConsolidations {
 
   public double getMonthlySavings() {
     return monthlySavings;
+  }
+
+  public double getTotalSavingAllDebts() {
+    return totalSavingAllDebts;
+  }
+
+  public double getMonthlySavingAllDebts() {
+    return monthlySavingAllDebts;
+  }
+
+  public double getTotalSavingMissingDebts() {
+    return totalSavingMissingDebts;
+  }
+
+  public double getMonthlySavingsMissingDebts() {
+    return monthlySavingsMissingDebts;
+  }
+
+  public double getTotalAmountToConsolidate() {
+    return totalAmountToConsolidate;
+  }
+
+  public double getExcedentAmount() {
+    return excedentAmount;
+  }
+
+  public double getConsolidableMissingAmount() {
+    return consolidableMissingAmount;
   }
 
   public double getMonthlyExternalPayment() {
@@ -156,8 +209,8 @@ public class FlexibleConsolidations {
       return;
     }
 
-    double[] rates = consolidationOffer.getAssistedRates();
-    double[] comissions = consolidationOffer.getCommissionRateList();
+    double[] rates = getConsolidationOffer().getAssistedRates();
+    double[] comissions = getConsolidationOffer().getCommissionRateList();
 
     for (int i = 0; i < rates.length; i++) {
       if (offerRate == rates[i]) {
@@ -184,8 +237,8 @@ public class FlexibleConsolidations {
       return;
     }
 
-    double[] rates = consolidationOffer.getAssistedRates();
-    double[] comissions = consolidationOffer.getCommissionRateList();
+    double[] rates = getConsolidationOffer().getAssistedRates();
+    double[] comissions = getConsolidationOffer().getCommissionRateList();
 
     for (int i = 0; i < comissions.length; i++) {
       if (offerComission == comissions[i]) {
@@ -256,17 +309,18 @@ public class FlexibleConsolidations {
    * parametros de esta clase o las deudas
    */
   private void updateOffer(boolean defaultRate) {
-    updateBuroDebtsStatistics();
-    calculateMaxDebtsRate();
     calculateOfferAmount();
-    calculateWightedRate();
+    calculateWeightedRate();
     calculateOfferRate(defaultRate);
+
+    updateBuroDebtsStatistics();
+    calculateGlobalAmounts();
     calculateSaving();
 
-    simulatorOffer.setMinAmount(this.offerAmount);
-    simulatorOffer.setMaxAmount(this.offerAmount);
-    simulatorOffer.setRate(this.offerRate);
-    simulatorOffer.setCommissionRate(this.offerComission);
+    getSimulatorOffer().setMinAmount(this.offerAmount);
+    getSimulatorOffer().setMaxAmount(this.offerAmount);
+    getSimulatorOffer().setRate(this.offerRate);
+    getSimulatorOffer().setCommissionRate(this.offerComission);
   }
 
   public void updateOffer() {
@@ -278,7 +332,7 @@ public class FlexibleConsolidations {
    * Cuando regresa nuevamente ya no es necesario invocarla.
    */
   public void updateConsolidatedDebts() {
-    for (DebtDto debt : consolidationOffer.getBuroDebts()) {
+    for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
 
       if (debt.getConsolidatedDebt() && debt.getTypeDebt() == 'I') {
         debt.setSelected(true);
@@ -294,8 +348,9 @@ public class FlexibleConsolidations {
     int totalDiagnosableDebts = 0;
     int totalUndiagnosableDebts = 0;
     int totalSelectedDebts = 0;
+    double maxDebtsRate = 0;
 
-    for (DebtDto debt : consolidationOffer.getBuroDebts()) {
+    for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
       if (debt.getConsolidatedDebt()) {
         totalDiagnosableDebts++;
 
@@ -303,11 +358,17 @@ public class FlexibleConsolidations {
           totalSelectedDebts++;
         }
       }
-      totalUndiagnosableDebts = consolidationOffer.getBuroDebts().size() - totalDiagnosableDebts;
+      totalUndiagnosableDebts = getConsolidationOffer().getBuroDebts().size() - totalDiagnosableDebts;
+
+      if (debt.isSelected() && debt.getExternalRate() > maxDebtsRate) {
+        maxDebtsRate = debt.getExternalRate();
+      }
     }
+
     this.totalDiagnosableDebts = totalDiagnosableDebts;
     this.totalUndiagnosableDebts = totalUndiagnosableDebts;
     this.totalSelectedDebts = totalSelectedDebts;
+    this.maxDebtsRate = maxDebtsRate;
   }
 
   /*
@@ -316,7 +377,7 @@ public class FlexibleConsolidations {
    */
   public void calculateOfferAmount() {
     double offerAmount = 0;
-    for (DebtDto debt : consolidationOffer.getBuroDebts()) {
+    for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
       if (debt.isSelected()) {
         double balance = debt.getBalance() > 0 ? debt.getBalance() : 0;
         double amountAwarded = debt.getAmountAwarded() > 0 ? debt.getAmountAwarded() : 0;
@@ -330,8 +391,7 @@ public class FlexibleConsolidations {
     }
     this.offerAmount = offerAmount;
 
-    if (this.offerAmount > consolidationOffer.getMaxClientAmount()) {
-      System.out.println("MONTO EXCEDIDO");
+    if (this.offerAmount > getConsolidationOffer().getMaxAmount()) {
       this.offerStatus = STATUS_EXCEEDED_AMOUNT;
     }
   }
@@ -340,48 +400,94 @@ public class FlexibleConsolidations {
    * Calcula la tasa ponderada con respecto a la tasa externa de la lista de
    * deudas seleccionadas.
    */
-  public void calculateWightedRate() {
+  public void calculateWeightedRate() {
     double amountRate = 0;
     double totalAmounts = 0;
 
-    for (DebtDto debt : consolidationOffer.getBuroDebts()) {
-      if (debt.isSelected()) {
+    int totalRates = 0;
+    int hasRate = 0;
+    int hasNoRate = 0;
+
+    for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
+
+      if (debt.getConsolidatedDebt()) {
+        totalRates++;
 
         switch (debt.getTypeDebt()) {
           case 'I':
-            amountRate += debt.getAmountAwarded() * debt.getExternalRate();
-            totalAmounts += debt.getAmountAwarded();
+            if (debt.isSelected()) {
+              if (debt.getExternalRate() > 0 && debt.getAmountAwarded() > 0) {
+                amountRate += debt.getAmountAwarded() * debt.getExternalRate();
+                totalAmounts += debt.getAmountAwarded();
+              }
+            }
+
+            if (debt.getExternalRate() > 0) {
+              hasRate++;
+            } else {
+              hasNoRate++;
+            }
             break;
 
           case 'R':
-            double revolvingRate = debt.getExternalRate();
-            if (revolvingRate > 0 && debt.getRevolverType() != DebtDto.REVOLVER_TRANSACTOR_TYPE) {
-              amountRate += debt.getBalance() * revolvingRate;
-              totalAmounts += debt.getBalance();
+            if (debt.isSelected()) {
+              double revolvingRate = debt.getExternalRate();
+              if (revolvingRate > 0 && debt.getRevolverType() != DebtDto.REVOLVER_TRANSACTOR_TYPE) {
+                amountRate += debt.getBalance() * revolvingRate;
+                totalAmounts += debt.getBalance();
+              }
             }
 
+            if (debt.getRevolverType() != DebtDto.REVOLVER_TRANSACTOR_TYPE) {
+              if (debt.getExternalRate() > 0) {
+                hasRate++;
+              } else {
+                hasNoRate++;
+              }
+            }
             break;
         }
+
       }
+
+      // if (debt.isSelected()) {
+
+      // switch (debt.getTypeDebt()) {
+      // case 'I':
+      // if (debt.getExternalRate() > 0 && debt.getAmountAwarded() > 0) {
+      // amountRate += debt.getAmountAwarded() * debt.getExternalRate();
+      // totalAmounts += debt.getAmountAwarded();
+      // }
+      // break;
+
+      // case 'R':
+      // double revolvingRate = debt.getExternalRate();
+      // if (revolvingRate > 0 && debt.getRevolverType() !=
+      // DebtDto.REVOLVER_TRANSACTOR_TYPE) {
+      // amountRate += debt.getBalance() * revolvingRate;
+      // totalAmounts += debt.getBalance();
+      // }
+
+      // break;
+      // }
+      // }
     }
-    this.wightedRate = amountRate / totalAmounts;
+
+    if (!Double.isNaN(amountRate / totalAmounts)) {
+      this.weightedRate = amountRate / totalAmounts;
+    }
+
+    if (totalRates == hasRate) {
+      this.weightedRateType = WEIGHTED_RATE_TYPE_KNOWN;
+    } else if (totalRates == hasNoRate) {
+      this.weightedRateType = WEIGHTED_RATE_TYPE_UNKNOWN;
+    } else {
+      this.weightedRateType = WEIGHTED_RATE_TYPE_MIXED;
+    }
   }
 
   /*
-   * Estima la tasa externa mas cara de la lista de deudas seleccionadas
-   */
-  public void calculateMaxDebtsRate() {
-    double maxDebtsRate = 0;
-    for (DebtDto debt : consolidationOffer.getBuroDebts()) {
-      if (debt.isSelected() && debt.getExternalRate() > maxDebtsRate) {
-        maxDebtsRate = debt.getExternalRate();
-      }
-    }
-    this.maxDebtsRate = maxDebtsRate;
-  }
-
-  /*
-   * Calucla la tasa kubo de forma automatica, con respecto a la lista de tasas
+   * Calcula la tasa kubo de forma automatica, con respecto a la lista de tasas
    * seleccionadas
    */
   public void calculateOfferRate(boolean defaultRate) {
@@ -390,8 +496,8 @@ public class FlexibleConsolidations {
       return;
     }
 
-    double[] ratesList = consolidationOffer.getAssistedRates();
-    double[] commissionsList = consolidationOffer.getCommissionRateList();
+    double[] ratesList = getConsolidationOffer().getAssistedRates();
+    double[] commissionsList = getConsolidationOffer().getCommissionRateList();
 
     if (ratesList.length > 0 && ratesList.length != commissionsList.length) {
       this.offerRate = 0;
@@ -404,9 +510,9 @@ public class FlexibleConsolidations {
     double kuboRateComission = commissionsList[0];
     double minFlexibleRate = ratesList[ratesList.length - 1];
     double minFlexibleComission = commissionsList[commissionsList.length - 1];
-    double flexibleRate = this.wightedRate * 0.9;
+    double flexibleRate = this.weightedRate * 0.9;
 
-    if (defaultRate || kuboRate * 1.1 <= this.wightedRate) {
+    if (defaultRate || kuboRate * 1.1 <= this.weightedRate) {
       this.offerRate = kuboRate;
       this.offerComission = kuboRateComission;
       updateOfferRateOnBuroDebts();
@@ -463,30 +569,155 @@ public class FlexibleConsolidations {
   public void calculateSaving() {
     double totalSaving = 0;
     double monthlySaving = 0;
-    double monthlyExternalPayment = 0;
+    double totalSavingAllDebts = 0;
+    double monthlySavingAllDebts = 0;
 
-    for (DebtDto dept : consolidationOffer.getBuroDebts()) {
-      if (dept.isSelected()) {
-        totalSaving += dept.getTotalSaving();
-        monthlySaving += dept.getMonthlySaving();
-        monthlyExternalPayment += dept.getPayment();
+    for (DebtDto debt : consolidationOffer.getBuroDebts()) {
+
+      if (debt.getTotalSaving() > 0) {
+        totalSavingAllDebts += debt.getTotalSaving();
+
+        if (debt.isSelected()) {
+          totalSaving += debt.getTotalSaving();
+        }
+      }
+
+      if (debt.getMonthlySaving() > 0) {
+        monthlySavingAllDebts += debt.getMonthlySaving();
+
+        if (debt.isSelected()) {
+          monthlySaving += debt.getMonthlySaving();
+        }
       }
     }
 
     this.totalSaving = totalSaving;
     this.monthlySavings = monthlySaving;
+
+    this.totalSavingAllDebts = totalSavingAllDebts;
+    this.monthlySavingAllDebts = monthlySavingAllDebts;
+
+    this.totalSavingMissingDebts = totalSavingAllDebts - totalSaving;
+    this.monthlySavingsMissingDebts = monthlySavingAllDebts - monthlySaving;
+    // this.benefitType
+  }
+
+  /*
+   * Calcula el monto total de todas las deudas que pueden ser consolidables
+   */
+  private void calculateGlobalAmounts() {
+    double totalAmountToConsolidate = 0;
+    double monthlyExternalPayment = 0;
+    double excedentAmount = 0;
+
+    for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
+      if (debt.getConsolidatedDebt()) {
+        switch (debt.getTypeDebt()) {
+          case 'I':
+            totalAmountToConsolidate += debt.getAmountAwarded();
+            break;
+          case 'R':
+            totalAmountToConsolidate += debt.getBalance();
+            break;
+        }
+      }
+      if (debt.isSelected()) {
+        totalSaving += debt.getTotalSaving();
+        monthlyExternalPayment += debt.getPayment();
+
+        if (debt.getTypeDebt() != 'R'
+            && debt.getAmountAwarded() > debt.getBalance()) {
+          excedentAmount += debt.getAmountAwarded() - debt.getBalance();
+        }
+      }
+    }
+
+    this.excedentAmount = excedentAmount;
     this.monthlyExternalPayment = monthlyExternalPayment;
+    this.totalAmountToConsolidate = totalAmountToConsolidate;
+    this.consolidableMissingAmount = totalAmountToConsolidate - this.offerAmount;
+  }
+
+  public String toJSONStringPdf() {
+    return toJSONStringPdf(null);
+  }
+
+  public String toJSONStringPdf(String firstname) {
+    if (firstname != null) {
+      firstname = " \"firstname\": \"" + firstname + "\",";
+    } else {
+      firstname = "";
+    }
+
+    return "{" +
+        firstname +
+        "\"offerAmount\":" + LoanSimulator.round(offerAmount, 2) +
+        ", \"offerRate\":" + offerRate +
+        ", \"monthlyExternalPayment\":" + LoanSimulator.round(monthlyExternalPayment, 2) +
+        ", \"maxDebtsRate\":" + maxDebtsRate +
+        ", \"totalSelectedDebts\":" + totalSelectedDebts +
+        ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
+        ", \"totalSaving\":" + LoanSimulator.round(totalSaving, 2) +
+        ", \"monthlySavings\":" + LoanSimulator.round(monthlySavings, 2) +
+        ", \"totalSavingAllDebts\":" + LoanSimulator.round(totalSavingAllDebts, 2) +
+        ", \"monthlySavingAllDebts\":" + LoanSimulator.round(monthlySavingAllDebts, 2) +
+        ", \"totalSavingMissingDebts\":" + LoanSimulator.round(totalSavingMissingDebts, 2) +
+        ", \"monthlySavingsMissingDebts\":" + LoanSimulator.round(monthlySavingsMissingDebts, 2) +
+        ", \"totalAmountToConsolidate\":" + LoanSimulator.round(totalAmountToConsolidate, 2) +
+        ", \"consolidableMissingAmount\":" + LoanSimulator.round(consolidableMissingAmount, 2) +
+        ", \"buroDebts\":" + consolidationOffer.buroDebtsToJSONString() +
+        "}";
+  }
+
+  public String toJSONString() {
+    return "{\"offerAmount\":" + offerAmount +
+        ", \"offerRate\":" + offerRate +
+        ", \"offerComission\":" + offerComission +
+        ", \"offerStatus\":" + offerStatus +
+        ", \"weightedRate\":" + weightedRate +
+        ", \"weightedRateType\":" + weightedRateType +
+        ", \"totalSaving\":" + totalSaving +
+        ", \"monthlySavings\":" + monthlySavings +
+        ", \"totalSavingAllDebts\":" + totalSavingAllDebts +
+        ", \"monthlySavingAllDebts\":" + monthlySavingAllDebts +
+        ", \"totalSavingMissingDebts\":" + totalSavingMissingDebts +
+        ", \"monthlySavingsMissingDebts\":" + monthlySavingsMissingDebts +
+        ", \"totalAmountToConsolidate\":" + totalAmountToConsolidate +
+        ", \"excedentAmount\":" + excedentAmount +
+        ", \"consolidableMissingAmount\":" + consolidableMissingAmount +
+        ", \"monthlyExternalPayment\":" + monthlyExternalPayment +
+        ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
+        ", \"totalUndiagnosableDebts\":" + totalUndiagnosableDebts +
+        ", \"totalSelectedDebts\":" + totalSelectedDebts +
+        ", \"maxDebtsRate\":" + maxDebtsRate +
+        ", \"simulatorOffer\":" + getSimulatorOffer().toJSONString() +
+        ", \"consolidationOffer\":" + consolidationOffer.toJSONString() + "}";
   }
 
   @Override
   public String toString() {
-    return "{\"offerAmount\":" + offerAmount + ", \"offerRate\":" + offerRate + ", \"offerComission\":" + offerComission
-        + ", \"offerStatus\":" + offerStatus + ", \"wightedRate\":" + wightedRate + ", \"totalSaving\":" + totalSaving
-        + ", \"monthlySavings\":" + monthlySavings + ", \"monthlyExternalPayment\":" + monthlyExternalPayment
-        + ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts + ", \"totalUndiagnosableDebts\":"
-        + totalUndiagnosableDebts + ", \"totalSelectedDebts\":" + totalSelectedDebts + ", \"maxDebtsRate\":"
-        + maxDebtsRate + ", \"simulatorOffer\":" + simulatorOffer + ", \"consolidationOffer\":" + consolidationOffer
-        + "}";
+    return "{\"offerAmount\":" + offerAmount +
+        ", \"offerRate\":" + offerRate +
+        ", \"offerComission\":" + offerComission +
+        ", \"offerStatus\":" + offerStatus +
+        ", \"weightedRate\":" + weightedRate +
+        ", \"weightedRateType\":" + weightedRateType +
+        ", \"totalSaving\":" + totalSaving +
+        ", \"monthlySavings\":" + monthlySavings +
+        ", \"totalSavingAllDebts\":" + totalSavingAllDebts +
+        ", \"monthlySavingAllDebts\":" + monthlySavingAllDebts +
+        ", \"totalSavingMissingDebts\":" + totalSavingMissingDebts +
+        ", \"monthlySavingsMissingDebts\":" + monthlySavingsMissingDebts +
+        ", \"totalAmountToConsolidate\":" + totalAmountToConsolidate +
+        ", \"excedentAmount\":" + excedentAmount +
+        ", \"consolidableMissingAmount\":" + consolidableMissingAmount +
+        ", \"monthlyExternalPayment\":" + monthlyExternalPayment +
+        ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
+        ", \"totalUndiagnosableDebts\":" + totalUndiagnosableDebts +
+        ", \"totalSelectedDebts\":" + totalSelectedDebts +
+        ", \"maxDebtsRate\":" + maxDebtsRate +
+        ", \"simulatorOffer\":" + simulatorOffer +
+        ", \"consolidationOffer\":" + consolidationOffer + "}";
   }
 
   public static void main(String[] args) {
