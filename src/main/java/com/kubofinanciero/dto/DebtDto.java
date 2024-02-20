@@ -27,6 +27,7 @@ public class DebtDto {
   private String financialEntity;
   private double amountAwarded;
   private double payment;
+  private double monthlyKuboPayment;
   private double balance;
   private double externalRate;
   private double kuboRate;
@@ -120,6 +121,10 @@ public class DebtDto {
 
   public double getPayment() {
     return payment;
+  }
+
+  public double getMonthlyKuboPayment() {
+    return monthlyKuboPayment;
   }
 
   public double getBalance() {
@@ -432,12 +437,13 @@ public class DebtDto {
     double kuboPayment = ls.payment(amountAwarded, awardedPaymentTerms, rate);
     double saving = payment > kuboPayment ? payment - kuboPayment : 0;
 
-    this.monthlySaving = convertToMonthlySaving(saving);
+    this.monthlyKuboPayment = convertToMonthlyPayment(kuboPayment);
+    this.monthlySaving = convertToMonthlyPayment(saving);
     this.totalSaving = saving * awardedPaymentTerms;
     this.remainingTotalSavings = saving * remainingPaymentTerms;
   }
 
-  private double convertToMonthlySaving(double saving) {
+  private double convertToMonthlyPayment(double saving) {
     switch (this.externalFrequency) {
       case 'W':
         return saving * 4;
@@ -472,6 +478,7 @@ public class DebtDto {
         ", \"financialEntity\":\"" + financialEntity +
         "\", \"amountAwarded\":" + LoanSimulator.round(amountAwarded, 2) +
         ", \"payment\":" + LoanSimulator.round(payment, 2) +
+        ", \"monthlyKuboPayment\":" + LoanSimulator.round(monthlyKuboPayment, 2) +
         ", \"balance\":" + LoanSimulator.round(balance, 2) +
         ", \"externalRate\":" + externalRate +
         ", \"kuboRate\":" + kuboRate +
@@ -499,6 +506,7 @@ public class DebtDto {
         ", \"entidad\":\"" + financialEntity +
         "\", \"monto_otorgado\":" + amountAwarded +
         ", \"cuota\":" + payment +
+        ", \"cuota_mensual_kubo\":" + monthlyKuboPayment +
         ", \"saldo\":" + balance +
         ", \"tasa_externa\":" + externalRate +
         ", \"tasa_kubo\":" + kuboRate +

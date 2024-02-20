@@ -1,34 +1,35 @@
 package com.kubofinanciero.utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.kubofinanciero.dto.AmortizationTableData;
 import com.kubofinanciero.dto.FrequencyDaysDto;
 
 public class LoanSimulator {
-  public List<FrequencyDaysDto> frequencyDays;
+  public static final HashMap<Character, FrequencyDaysDto> frequencyDays = new HashMap<Character, FrequencyDaysDto>() {
+    {
+      put('W', new FrequencyDaysDto('W', "Semana", 7));
+      put('K', new FrequencyDaysDto('K', "Catorcena", 14));
+      put('S', new FrequencyDaysDto('S', "Quincena", 15));
+      put('M', new FrequencyDaysDto('M', "Mes", 30));
+    }
+  };
 
   public LoanSimulator() {
-    frequencyDays = new ArrayList<FrequencyDaysDto>();
-    frequencyDays.add(new FrequencyDaysDto('W', 7));
-    frequencyDays.add(new FrequencyDaysDto('K', 14));
-    frequencyDays.add(new FrequencyDaysDto('S', 15));
-    frequencyDays.add(new FrequencyDaysDto('M', 30));
   }
 
-  public FrequencyDaysDto getFrequencyDays(char frequency) {
-    for (FrequencyDaysDto frequencyDay : frequencyDays) {
-      if (frequencyDay.frequency == frequency) {
-        return frequencyDay;
-      }
+  public final FrequencyDaysDto getFrequency(char frequency) {
+    FrequencyDaysDto freq = frequencyDays.get(frequency);
+    if (freq == null) {
+      return frequencyDays.get('M');
     }
-
-    return frequencyDays.get(3);
+    return freq;
   }
 
   public double periodsPerYear(char frequency, boolean periodsForCAT) {
-    double periodsPerYear = getFrequencyDays(frequency).periodsPerYear;
+    double periodsPerYear = getFrequency(frequency).periodsPerYear;
 
     if (periodsForCAT) {
       return Math.ceil(periodsPerYear);

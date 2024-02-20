@@ -24,12 +24,14 @@ import com.kubofinanciero.utils.LoanSimulator;
  *  excedentAmount : El Colchoncito es lo que le sobrara despues de pagar todas sus deudas. Se calcula restando el saldo del monto otorgado,
  *  consolidableMissingAmount: Monto restante para consolidar, es el monto a consolidar de las deudas no seleccionadas. 
  *  monthlyExternalPayment: Es lo que el cliente esta pagando mensualmente de sus deudas seleccionadas
+ *  monthlyKuboPayment: Es lo que el cliente pagaría mensualmente en sus deudas seleccionadas con la tasa kubo
  *  totalDiagnosableDebts: Numero de deudas consolidables
  *  totalUndiagnosableDebts: Numero de dudas pueden ser consolidables pero el cliente no complemento la info
  *  totalSelectedDebts: Numero de deudas seleccionadas 
  *  maxDebtsRate: Tasa externa mas alta, obtenida de las deudas seleccionadas
  *  simulatorOffer: Objeto que funge como inputs para el simulador
  *  consolidationOffer: Objeto que almacena el estatus actual de la oferta entregada por data
+ *  catSimulation: Simulación utilizada para estimar el CAT. Tambien podría ser utilizada como una oferta previa.
  */
 public class FlexibleConsolidations {
 
@@ -58,10 +60,12 @@ public class FlexibleConsolidations {
   private double excedentAmount;
   private double consolidableMissingAmount;
   private double monthlyExternalPayment;
+  private double monthlyKuboPayment;
   private int totalDiagnosableDebts;
   private int totalUndiagnosableDebts;
   private int totalSelectedDebts;
   private double maxDebtsRate;
+  private CatSimulation catSimulation;
 
   private SimulatorOfferDto simulatorOffer;
   private ConsolidationOfferDto consolidationOffer;
@@ -179,6 +183,14 @@ public class FlexibleConsolidations {
 
   public double getMaxDebtsRate() {
     return maxDebtsRate;
+  }
+
+  public CatSimulation getCatSimulation() {
+    if (catSimulation == null) {
+      catSimulation = new CatSimulation();
+    }
+
+    return catSimulation;
   }
 
   public SimulatorOfferDto getSimulatorOffer() {
@@ -321,6 +333,11 @@ public class FlexibleConsolidations {
     getSimulatorOffer().setMaxAmount(this.offerAmount);
     getSimulatorOffer().setRate(this.offerRate);
     getSimulatorOffer().setCommissionRate(this.offerComission);
+
+    catSimulation = new CatSimulation(
+        monthlyKuboPayment,
+        'M',
+        getSimulatorOffer());
   }
 
   public void updateOffer() {
@@ -608,6 +625,7 @@ public class FlexibleConsolidations {
   private void calculateGlobalAmounts() {
     double totalAmountToConsolidate = 0;
     double monthlyExternalPayment = 0;
+    double monthlyKuboPayment = 0;
     double excedentAmount = 0;
 
     for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
@@ -624,6 +642,7 @@ public class FlexibleConsolidations {
       if (debt.isSelected()) {
         totalSaving += debt.getTotalSaving();
         monthlyExternalPayment += debt.getPayment();
+        monthlyKuboPayment += debt.getMonthlyKuboPayment();
 
         if (debt.getTypeDebt() != 'R'
             && debt.getAmountAwarded() > debt.getBalance()) {
@@ -634,6 +653,7 @@ public class FlexibleConsolidations {
 
     this.excedentAmount = excedentAmount;
     this.monthlyExternalPayment = monthlyExternalPayment;
+    this.monthlyKuboPayment = monthlyKuboPayment;
     this.totalAmountToConsolidate = totalAmountToConsolidate;
     this.consolidableMissingAmount = totalAmountToConsolidate - this.offerAmount;
   }
@@ -666,6 +686,7 @@ public class FlexibleConsolidations {
         ", \"totalAmountToConsolidate\":" + LoanSimulator.round(totalAmountToConsolidate, 2) +
         ", \"consolidableMissingAmount\":" + LoanSimulator.round(consolidableMissingAmount, 2) +
         ", \"buroDebts\":" + consolidationOffer.buroDebtsToJSONString() +
+        ", \"catSimulation\":" + catSimulation +
         "}";
   }
 
@@ -691,7 +712,9 @@ public class FlexibleConsolidations {
         ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"maxDebtsRate\":" + maxDebtsRate +
         ", \"simulatorOffer\":" + getSimulatorOffer().toJSONString() +
-        ", \"consolidationOffer\":" + consolidationOffer.toJSONString() + "}";
+        ", \"consolidationOffer\":" + consolidationOffer.toJSONString() +
+        ", \"catSimulation\":" + catSimulation +
+        "}";
   }
 
   @Override
@@ -717,7 +740,9 @@ public class FlexibleConsolidations {
         ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"maxDebtsRate\":" + maxDebtsRate +
         ", \"simulatorOffer\":" + simulatorOffer +
-        ", \"consolidationOffer\":" + consolidationOffer + "}";
+        ", \"consolidationOffer\":" + consolidationOffer +
+        ", \"catSimulation\":" + catSimulation +
+        "}";
   }
 
   public static void main(String[] args) {
