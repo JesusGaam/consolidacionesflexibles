@@ -24,12 +24,14 @@ import com.kubofinanciero.utils.LoanSimulator;
  *  excedentAmount : El Colchoncito es lo que le sobrara despues de pagar todas sus deudas. Se calcula restando el saldo del monto otorgado,
  *  consolidableMissingAmount: Monto restante para consolidar, es el monto a consolidar de las deudas no seleccionadas. 
  *  monthlyExternalPayment: Es lo que el cliente esta pagando mensualmente de sus deudas seleccionadas
+ *  monthlyKuboPayment: Es lo que el cliente pagaría mensualmente en sus deudas seleccionadas con la tasa kubo
  *  totalDiagnosableDebts: Numero de deudas consolidables
  *  totalUndiagnosableDebts: Numero de dudas pueden ser consolidables pero el cliente no complemento la info
  *  totalSelectedDebts: Numero de deudas seleccionadas 
  *  maxDebtsRate: Tasa externa mas alta, obtenida de las deudas seleccionadas
  *  simulatorOffer: Objeto que funge como inputs para el simulador
  *  consolidationOffer: Objeto que almacena el estatus actual de la oferta entregada por data
+ *  catSimulation: Simulación utilizada para estimar el CAT. Tambien podría ser utilizada como una oferta previa.
  */
 public class FlexibleConsolidations {
 
@@ -58,10 +60,12 @@ public class FlexibleConsolidations {
   private double excedentAmount;
   private double consolidableMissingAmount;
   private double monthlyExternalPayment;
+  private double monthlyKuboPayment;
   private int totalDiagnosableDebts;
   private int totalUndiagnosableDebts;
   private int totalSelectedDebts;
   private double maxDebtsRate;
+  private CatSimulation catSimulation;
 
   private SimulatorOfferDto simulatorOffer;
   private ConsolidationOfferDto consolidationOffer;
@@ -179,6 +183,14 @@ public class FlexibleConsolidations {
 
   public double getMaxDebtsRate() {
     return maxDebtsRate;
+  }
+
+  public CatSimulation getCatSimulation() {
+    if (catSimulation == null) {
+      catSimulation = new CatSimulation();
+    }
+
+    return catSimulation;
   }
 
   public SimulatorOfferDto getSimulatorOffer() {
@@ -321,6 +333,15 @@ public class FlexibleConsolidations {
     getSimulatorOffer().setMaxAmount(this.offerAmount);
     getSimulatorOffer().setRate(this.offerRate);
     getSimulatorOffer().setCommissionRate(this.offerComission);
+
+    catSimulation = new CatSimulation(
+        monthlyKuboPayment,
+        'M',
+        getSimulatorOffer());
+
+    System.out.println("================================");
+    System.out.println(getSimulatorOffer());
+    System.out.println("================================");
   }
 
   public void updateOffer() {
@@ -389,7 +410,7 @@ public class FlexibleConsolidations {
         }
       }
     }
-    this.offerAmount = offerAmount;
+    this.offerAmount = LoanSimulator.round(offerAmount);
 
     if (this.offerAmount > getConsolidationOffer().getMaxAmount()) {
       this.offerStatus = STATUS_EXCEEDED_AMOUNT;
@@ -449,28 +470,6 @@ public class FlexibleConsolidations {
         }
 
       }
-
-      // if (debt.isSelected()) {
-
-      // switch (debt.getTypeDebt()) {
-      // case 'I':
-      // if (debt.getExternalRate() > 0 && debt.getAmountAwarded() > 0) {
-      // amountRate += debt.getAmountAwarded() * debt.getExternalRate();
-      // totalAmounts += debt.getAmountAwarded();
-      // }
-      // break;
-
-      // case 'R':
-      // double revolvingRate = debt.getExternalRate();
-      // if (revolvingRate > 0 && debt.getRevolverType() !=
-      // DebtDto.REVOLVER_TRANSACTOR_TYPE) {
-      // amountRate += debt.getBalance() * revolvingRate;
-      // totalAmounts += debt.getBalance();
-      // }
-
-      // break;
-      // }
-      // }
     }
 
     if (!Double.isNaN(amountRate / totalAmounts)) {
@@ -591,14 +590,14 @@ public class FlexibleConsolidations {
       }
     }
 
-    this.totalSaving = totalSaving;
-    this.monthlySavings = monthlySaving;
+    this.totalSaving = LoanSimulator.round(totalSaving);
+    this.monthlySavings = LoanSimulator.round(monthlySaving);
 
-    this.totalSavingAllDebts = totalSavingAllDebts;
-    this.monthlySavingAllDebts = monthlySavingAllDebts;
+    this.totalSavingAllDebts = LoanSimulator.round(totalSavingAllDebts);
+    this.monthlySavingAllDebts = LoanSimulator.round(monthlySavingAllDebts);
 
-    this.totalSavingMissingDebts = totalSavingAllDebts - totalSaving;
-    this.monthlySavingsMissingDebts = monthlySavingAllDebts - monthlySaving;
+    this.totalSavingMissingDebts = LoanSimulator.round(totalSavingAllDebts - totalSaving);
+    this.monthlySavingsMissingDebts = LoanSimulator.round(monthlySavingAllDebts - monthlySaving);
     // this.benefitType
   }
 
@@ -608,6 +607,7 @@ public class FlexibleConsolidations {
   private void calculateGlobalAmounts() {
     double totalAmountToConsolidate = 0;
     double monthlyExternalPayment = 0;
+    double monthlyKuboPayment = 0;
     double excedentAmount = 0;
 
     for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
@@ -624,6 +624,7 @@ public class FlexibleConsolidations {
       if (debt.isSelected()) {
         totalSaving += debt.getTotalSaving();
         monthlyExternalPayment += debt.getPayment();
+        monthlyKuboPayment += debt.getMonthlyKuboPayment();
 
         if (debt.getTypeDebt() != 'R'
             && debt.getAmountAwarded() > debt.getBalance()) {
@@ -632,14 +633,11 @@ public class FlexibleConsolidations {
       }
     }
 
-    this.excedentAmount = excedentAmount;
-    this.monthlyExternalPayment = monthlyExternalPayment;
-    this.totalAmountToConsolidate = totalAmountToConsolidate;
-    this.consolidableMissingAmount = totalAmountToConsolidate - this.offerAmount;
-  }
-
-  public String toJSONStringPdf() {
-    return toJSONStringPdf(null);
+    this.excedentAmount = LoanSimulator.round(excedentAmount);
+    this.monthlyExternalPayment = LoanSimulator.round(monthlyExternalPayment);
+    this.monthlyKuboPayment = monthlyKuboPayment;
+    this.totalAmountToConsolidate = LoanSimulator.round(totalAmountToConsolidate);
+    this.consolidableMissingAmount = LoanSimulator.round(totalAmountToConsolidate - this.offerAmount);
   }
 
   public String toJSONStringPdf(String firstname) {
@@ -651,20 +649,21 @@ public class FlexibleConsolidations {
 
     return "{" +
         firstname +
-        "\"offerAmount\":" + LoanSimulator.round(offerAmount, 2) +
+        "\"offerAmount\":" + offerAmount +
         ", \"offerRate\":" + offerRate +
-        ", \"monthlyExternalPayment\":" + LoanSimulator.round(monthlyExternalPayment, 2) +
+        ", \"monthlyExternalPayment\":" + monthlyExternalPayment +
         ", \"maxDebtsRate\":" + maxDebtsRate +
         ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
-        ", \"totalSaving\":" + LoanSimulator.round(totalSaving, 2) +
-        ", \"monthlySavings\":" + LoanSimulator.round(monthlySavings, 2) +
-        ", \"totalSavingAllDebts\":" + LoanSimulator.round(totalSavingAllDebts, 2) +
-        ", \"monthlySavingAllDebts\":" + LoanSimulator.round(monthlySavingAllDebts, 2) +
-        ", \"totalSavingMissingDebts\":" + LoanSimulator.round(totalSavingMissingDebts, 2) +
-        ", \"monthlySavingsMissingDebts\":" + LoanSimulator.round(monthlySavingsMissingDebts, 2) +
-        ", \"totalAmountToConsolidate\":" + LoanSimulator.round(totalAmountToConsolidate, 2) +
-        ", \"consolidableMissingAmount\":" + LoanSimulator.round(consolidableMissingAmount, 2) +
+        ", \"totalSaving\":" + totalSaving +
+        ", \"monthlySavings\":" + monthlySavings +
+        ", \"totalSavingAllDebts\":" + totalSavingAllDebts +
+        ", \"monthlySavingAllDebts\":" + monthlySavingAllDebts +
+        ", \"totalSavingMissingDebts\":" + totalSavingMissingDebts +
+        ", \"monthlySavingsMissingDebts\":" + monthlySavingsMissingDebts +
+        ", \"totalAmountToConsolidate\":" + totalAmountToConsolidate +
+        ", \"consolidableMissingAmount\":" + consolidableMissingAmount +
+        ", \"cat\":" + catSimulation.getCat() +
         ", \"buroDebts\":" + consolidationOffer.buroDebtsToJSONString() +
         "}";
   }
@@ -690,8 +689,10 @@ public class FlexibleConsolidations {
         ", \"totalUndiagnosableDebts\":" + totalUndiagnosableDebts +
         ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"maxDebtsRate\":" + maxDebtsRate +
+        ", \"catSimulation\":" + catSimulation +
         ", \"simulatorOffer\":" + getSimulatorOffer().toJSONString() +
-        ", \"consolidationOffer\":" + consolidationOffer.toJSONString() + "}";
+        ", \"consolidationOffer\":" + consolidationOffer.toJSONString() +
+        "}";
   }
 
   @Override
@@ -716,8 +717,10 @@ public class FlexibleConsolidations {
         ", \"totalUndiagnosableDebts\":" + totalUndiagnosableDebts +
         ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"maxDebtsRate\":" + maxDebtsRate +
+        ", \"catSimulation\":" + catSimulation +
         ", \"simulatorOffer\":" + simulatorOffer +
-        ", \"consolidationOffer\":" + consolidationOffer + "}";
+        ", \"consolidationOffer\":" + consolidationOffer +
+        "}";
   }
 
   public static void main(String[] args) {
