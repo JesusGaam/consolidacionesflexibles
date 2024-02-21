@@ -1,9 +1,5 @@
 package com.kubofinanciero;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.kubofinanciero.dto.AmortizationTableData;
 import com.kubofinanciero.dto.SimulatorOfferDto;
 import com.kubofinanciero.utils.CAT;
 import com.kubofinanciero.utils.LoanSimulator;
@@ -17,14 +13,12 @@ public class CatSimulation {
   private int paymentTerm;
   private char frequency;
   private double cat;
-  private List<AmortizationTableData> amortizationTable;
   private LoanSimulator loan = new LoanSimulator();
   private SimulatorOfferDto simulatorOffer;
   private double ratefrequency;
 
   public CatSimulation() {
     frequency = 'M';
-    amortizationTable = new ArrayList<AmortizationTableData>();
   }
 
   public CatSimulation(
@@ -44,7 +38,6 @@ public class CatSimulation {
     findPaymentTerm();
     findPayment();
     findCat();
-    buildAmortizationTable();
   }
 
   public double getAmount() {
@@ -75,11 +68,12 @@ public class CatSimulation {
     return cat;
   }
 
-  public List<AmortizationTableData> getAmortizationTable() {
-    return amortizationTable;
-  }
-
   private void validateSuggestedPayment() {
+
+    if (suggestedPayment <= 0) {
+      return;
+    }
+
     if (suggestedPayment > simulatorOffer.getMaxPayment()) {
       suggestedPayment = simulatorOffer.getMaxPayment();
     }
@@ -90,6 +84,12 @@ public class CatSimulation {
   }
 
   private void findPaymentTerm() {
+
+    if (amount <= 0 || suggestedPayment <= 0) {
+      paymentTerm = 0;
+      return;
+    }
+
     paymentTerm = loan.totalPayments(amount, suggestedPayment, ratefrequency);
     validatePaymentTerm();
   }
@@ -106,6 +106,11 @@ public class CatSimulation {
   }
 
   private void findPayment() {
+    if (amount <= 0 || paymentTerm <= 0) {
+      payment = 0;
+      return;
+    }
+
     double payment = loan.payment(amount, paymentTerm, ratefrequency);
 
     while (payment > simulatorOffer.getMaxPayment()) {
@@ -116,28 +121,25 @@ public class CatSimulation {
       payment = loan.payment(amount, --paymentTerm, ratefrequency);
     }
 
-    this.payment = payment;
+    this.payment = LoanSimulator.round(payment);
   }
 
   private void findCat() {
+    if (amount <= 0 || commissionRate <= 0 || paymentTerm <= 0) {
+      cat = 0;
+      return;
+    }
+
     double cashCommission = loan.cashCommission(amount, commissionRate, false);
     double paymentCat = loan.payment(amount, paymentTerm, ratefrequency);
     int periodsPerYear = loan.getFrequency(frequency).getPeriodsPerYearForCat();
 
-    cat = new CAT(amount, cashCommission, paymentCat, paymentTerm, periodsPerYear).getCAT();
+    double fullCat = new CAT(amount, cashCommission, paymentCat, paymentTerm, periodsPerYear).getCAT();
+    cat = LoanSimulator.round(fullCat, 1);
   }
 
-  private void buildAmortizationTable() {
-    double ratefrequency = loan.rateFrequency(rate, frequency, true);
-    amortizationTable = loan.amortizationTable(amount, ratefrequency, payment, paymentTerm);
-  }
-
-  public String toJSONString(boolean includeAmortizationTable) {
-    String amortizationTable = "";
-    if (includeAmortizationTable) {
-      amortizationTable = ", \"amortizationTable\":" + this.amortizationTable;
-    }
-
+  @Override
+  public String toString() {
     return "{ \"amount\":" + amount +
         ", \"rate\":" + rate +
         ", \"commissionRate\":" + commissionRate +
@@ -145,12 +147,6 @@ public class CatSimulation {
         ", \"paymentTerm\":" + paymentTerm +
         ", \"frequency\": \"" + frequency +
         "\", \"cat\":" + cat +
-        amortizationTable +
         "}";
-  }
-
-  @Override
-  public String toString() {
-    return toJSONString(true);
   }
 }

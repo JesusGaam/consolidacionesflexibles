@@ -338,6 +338,10 @@ public class FlexibleConsolidations {
         monthlyKuboPayment,
         'M',
         getSimulatorOffer());
+
+    System.out.println("================================");
+    System.out.println(getSimulatorOffer());
+    System.out.println("================================");
   }
 
   public void updateOffer() {
@@ -406,7 +410,7 @@ public class FlexibleConsolidations {
         }
       }
     }
-    this.offerAmount = offerAmount;
+    this.offerAmount = LoanSimulator.round(offerAmount);
 
     if (this.offerAmount > getConsolidationOffer().getMaxAmount()) {
       this.offerStatus = STATUS_EXCEEDED_AMOUNT;
@@ -466,28 +470,6 @@ public class FlexibleConsolidations {
         }
 
       }
-
-      // if (debt.isSelected()) {
-
-      // switch (debt.getTypeDebt()) {
-      // case 'I':
-      // if (debt.getExternalRate() > 0 && debt.getAmountAwarded() > 0) {
-      // amountRate += debt.getAmountAwarded() * debt.getExternalRate();
-      // totalAmounts += debt.getAmountAwarded();
-      // }
-      // break;
-
-      // case 'R':
-      // double revolvingRate = debt.getExternalRate();
-      // if (revolvingRate > 0 && debt.getRevolverType() !=
-      // DebtDto.REVOLVER_TRANSACTOR_TYPE) {
-      // amountRate += debt.getBalance() * revolvingRate;
-      // totalAmounts += debt.getBalance();
-      // }
-
-      // break;
-      // }
-      // }
     }
 
     if (!Double.isNaN(amountRate / totalAmounts)) {
@@ -608,14 +590,14 @@ public class FlexibleConsolidations {
       }
     }
 
-    this.totalSaving = totalSaving;
-    this.monthlySavings = monthlySaving;
+    this.totalSaving = LoanSimulator.round(totalSaving);
+    this.monthlySavings = LoanSimulator.round(monthlySaving);
 
-    this.totalSavingAllDebts = totalSavingAllDebts;
-    this.monthlySavingAllDebts = monthlySavingAllDebts;
+    this.totalSavingAllDebts = LoanSimulator.round(totalSavingAllDebts);
+    this.monthlySavingAllDebts = LoanSimulator.round(monthlySavingAllDebts);
 
-    this.totalSavingMissingDebts = totalSavingAllDebts - totalSaving;
-    this.monthlySavingsMissingDebts = monthlySavingAllDebts - monthlySaving;
+    this.totalSavingMissingDebts = LoanSimulator.round(totalSavingAllDebts - totalSaving);
+    this.monthlySavingsMissingDebts = LoanSimulator.round(monthlySavingAllDebts - monthlySaving);
     // this.benefitType
   }
 
@@ -651,15 +633,11 @@ public class FlexibleConsolidations {
       }
     }
 
-    this.excedentAmount = excedentAmount;
-    this.monthlyExternalPayment = monthlyExternalPayment;
+    this.excedentAmount = LoanSimulator.round(excedentAmount);
+    this.monthlyExternalPayment = LoanSimulator.round(monthlyExternalPayment);
     this.monthlyKuboPayment = monthlyKuboPayment;
-    this.totalAmountToConsolidate = totalAmountToConsolidate;
-    this.consolidableMissingAmount = totalAmountToConsolidate - this.offerAmount;
-  }
-
-  public String toJSONStringPdf() {
-    return toJSONStringPdf(null);
+    this.totalAmountToConsolidate = LoanSimulator.round(totalAmountToConsolidate);
+    this.consolidableMissingAmount = LoanSimulator.round(totalAmountToConsolidate - this.offerAmount);
   }
 
   public String toJSONStringPdf(String firstname) {
@@ -671,22 +649,22 @@ public class FlexibleConsolidations {
 
     return "{" +
         firstname +
-        "\"offerAmount\":" + LoanSimulator.round(offerAmount, 2) +
+        "\"offerAmount\":" + offerAmount +
         ", \"offerRate\":" + offerRate +
-        ", \"monthlyExternalPayment\":" + LoanSimulator.round(monthlyExternalPayment, 2) +
+        ", \"monthlyExternalPayment\":" + monthlyExternalPayment +
         ", \"maxDebtsRate\":" + maxDebtsRate +
         ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
-        ", \"totalSaving\":" + LoanSimulator.round(totalSaving, 2) +
-        ", \"monthlySavings\":" + LoanSimulator.round(monthlySavings, 2) +
-        ", \"totalSavingAllDebts\":" + LoanSimulator.round(totalSavingAllDebts, 2) +
-        ", \"monthlySavingAllDebts\":" + LoanSimulator.round(monthlySavingAllDebts, 2) +
-        ", \"totalSavingMissingDebts\":" + LoanSimulator.round(totalSavingMissingDebts, 2) +
-        ", \"monthlySavingsMissingDebts\":" + LoanSimulator.round(monthlySavingsMissingDebts, 2) +
-        ", \"totalAmountToConsolidate\":" + LoanSimulator.round(totalAmountToConsolidate, 2) +
-        ", \"consolidableMissingAmount\":" + LoanSimulator.round(consolidableMissingAmount, 2) +
+        ", \"totalSaving\":" + totalSaving +
+        ", \"monthlySavings\":" + monthlySavings +
+        ", \"totalSavingAllDebts\":" + totalSavingAllDebts +
+        ", \"monthlySavingAllDebts\":" + monthlySavingAllDebts +
+        ", \"totalSavingMissingDebts\":" + totalSavingMissingDebts +
+        ", \"monthlySavingsMissingDebts\":" + monthlySavingsMissingDebts +
+        ", \"totalAmountToConsolidate\":" + totalAmountToConsolidate +
+        ", \"consolidableMissingAmount\":" + consolidableMissingAmount +
+        ", \"cat\":" + catSimulation.getCat() +
         ", \"buroDebts\":" + consolidationOffer.buroDebtsToJSONString() +
-        ", \"catSimulation\":" + catSimulation +
         "}";
   }
 
@@ -711,9 +689,9 @@ public class FlexibleConsolidations {
         ", \"totalUndiagnosableDebts\":" + totalUndiagnosableDebts +
         ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"maxDebtsRate\":" + maxDebtsRate +
+        ", \"catSimulation\":" + catSimulation +
         ", \"simulatorOffer\":" + getSimulatorOffer().toJSONString() +
         ", \"consolidationOffer\":" + consolidationOffer.toJSONString() +
-        ", \"catSimulation\":" + catSimulation +
         "}";
   }
 
@@ -739,9 +717,9 @@ public class FlexibleConsolidations {
         ", \"totalUndiagnosableDebts\":" + totalUndiagnosableDebts +
         ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"maxDebtsRate\":" + maxDebtsRate +
+        ", \"catSimulation\":" + catSimulation +
         ", \"simulatorOffer\":" + simulatorOffer +
         ", \"consolidationOffer\":" + consolidationOffer +
-        ", \"catSimulation\":" + catSimulation +
         "}";
   }
 

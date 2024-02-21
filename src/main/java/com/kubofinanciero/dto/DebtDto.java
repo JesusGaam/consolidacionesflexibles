@@ -23,6 +23,8 @@ public class DebtDto {
   public static final String REVOLVER_LIGH_TYPE = "Ligh Revolver";
   public static final String REVOLVER_HIGH_TYPE = "High Revolver";
 
+  public static final char REVOLVER_FREQUENCY = 'M';
+
   private long registry;
   private String financialEntity;
   private double amountAwarded;
@@ -98,7 +100,7 @@ public class DebtDto {
     typeDebtList.put('M', "Hipoteca");
     // O: Son creditos no tienen linea definida (p.ej: telefonia, internet, etc)
     typeDebtList.put('O', "Servicios");
-    // X.Se refiere a creditos para personas morales o fisicas con Act. empresarial
+    // X: Se refiere a creditos para personas morales o fisicas con Act. empresarial
     typeDebtList.put('X', "Crédito empresarial");
 
     typeDebtName = typeDebtList.get(typeDebt);
@@ -209,6 +211,10 @@ public class DebtDto {
     return isSelected;
   }
 
+  private int getRevolverPaymentTerm() {
+    return 12;
+  }
+
   /*
    * Permite renombrar la entidad financiera, solo puede editarse para deudas
    * consolidables y editables.
@@ -237,8 +243,11 @@ public class DebtDto {
     if (this.payment != payment) {
       this.statusDebt = STATUS_UPDATED_DEBT;
     }
+
     this.payment = payment;
+    validateStatusRate();
     calculateSavings();
+
     return this;
   }
 
@@ -270,8 +279,11 @@ public class DebtDto {
     if (this.amountAwarded != amountAwarded) {
       this.statusDebt = STATUS_UPDATED_DEBT;
     }
+
     this.amountAwarded = amountAwarded;
+    validateStatusRate();
     calculateSavings();
+
     return this;
   }
 
@@ -288,8 +300,11 @@ public class DebtDto {
     if (this.externalRate != externalRate) {
       this.statusDebt = STATUS_UPDATED_DEBT;
     }
+
     this.externalRate = externalRate;
+    validateStatusRate();
     calculateSavings();
+
     return this;
   }
 
@@ -305,6 +320,7 @@ public class DebtDto {
 
     this.kuboRate = kuboRate;
     calculateSavings();
+
     return this;
   }
 
@@ -322,16 +338,18 @@ public class DebtDto {
     if (this.awardedPaymentTerms != awardedPaymentTerms) {
       this.statusDebt = STATUS_UPDATED_DEBT;
     }
+
     this.awardedPaymentTerms = awardedPaymentTerms;
+    validateStatusRate();
     calculateSavings();
     calculateProgress();
+
     return this;
   }
 
   /*
    * Permite actualizar el plazo restante de la deuda externa, solo puede editarse
-   * para deudas
-   * consolidables y editables.
+   * para deudas consolidables y editables.
    * 
    * NOTA: Al actualizarse, se recalculan los ahorros y el progreso de la deuda.
    */
@@ -340,28 +358,40 @@ public class DebtDto {
       return this;
     }
 
+    if (this.remainingPaymentTerms != remainingPaymentTerms) {
+      this.statusDebt = STATUS_UPDATED_DEBT;
+    }
+
     this.remainingPaymentTerms = remainingPaymentTerms;
+    validateStatusRate();
     calculateSavings();
     calculateProgress();
+
     return this;
   }
 
   /*
    * Permite actualizar la frecuencia externa, solo puede editarse
-   * para deudas consolidables y editables.
+   * para deudas consolidables, editables y que no sean revolventes.
    * 
-   * NOTA: Al actualizarse, se recalculan los ahorros.
+   * NOTAS:
+   * - Al actualizarse, se recalculan los ahorros.
+   * - Las deudas revolventes no manejan frecuencias de pago, por defecto se usa
+   * la mensual para calculos de ahorros.
    */
   public DebtDto setExternalFrequency(char externalFrequency) {
-    if (!this.consolidatedDebt || !editableDept()) {
+    if (!this.consolidatedDebt || !editableDept() || typeDebt == 'R') {
       return this;
     }
 
     if (this.externalFrequency != externalFrequency) {
       this.statusDebt = STATUS_UPDATED_DEBT;
     }
+
     this.externalFrequency = externalFrequency;
+    validateStatusRate();
     calculateSavings();
+
     return this;
   }
 
@@ -379,16 +409,19 @@ public class DebtDto {
   }
 
   /*
-   * Permite seleccionar la deuda siempre y cuando sean consolidables y editables.
+   * Permite seleccionar o quitar selección la deuda siempre y cuando sean
+   * consolidables, editables y con tasas calculables.
    */
   public DebtDto setSelected(boolean isSelected) {
-    if (!this.consolidatedDebt || !editableDept()) {
-      return this;
-    }
-    if (this.consolidatedDebt) {
+
+    if (canBeSelected() && editableDept()) {
       this.isSelected = isSelected;
     }
     return this;
+  }
+
+  public boolean canBeSelected() {
+    return this.consolidatedDebt && statusRate.equals("Calculable");
   }
 
   /*
@@ -427,19 +460,35 @@ public class DebtDto {
    * Calcula los ahorros para deudas de pagos fijos
    */
   public void calculateSavings() {
-    LoanSimulator ls = new LoanSimulator();
 
-    if (!consolidatedDebt || this.typeDebt != 'I') {
+    if (!consolidatedDebt || !statusRate.equals("Calculable")) {
       return;
     }
 
+    LoanSimulator ls = new LoanSimulator();
+    double amount = getAmountAwarded();
+    int paymentTerms = getAwardedPaymentTerms();
+    int remainingPaymentTerms = getRemainingPaymentTerms();
+    char externalFrequency = getExternalFrequency();
+    double payment = getPayment();
+
+    if (this.typeDebt == 'R') {
+      amount = getBalance();
+      paymentTerms = getRevolverPaymentTerm();
+      remainingPaymentTerms = getRevolverPaymentTerm();
+      externalFrequency = REVOLVER_FREQUENCY;
+
+      double rate = ls.rateFrequency(getExternalRate(), externalFrequency, true);
+      payment = ls.payment(amount, paymentTerms, rate);
+    }
+
     double rate = ls.rateFrequency(kuboRate, externalFrequency, true);
-    double kuboPayment = ls.payment(amountAwarded, awardedPaymentTerms, rate);
+    double kuboPayment = ls.payment(amount, paymentTerms, rate);
     double saving = payment > kuboPayment ? payment - kuboPayment : 0;
 
     this.monthlyKuboPayment = convertToMonthlyPayment(kuboPayment);
     this.monthlySaving = convertToMonthlyPayment(saving);
-    this.totalSaving = saving * awardedPaymentTerms;
+    this.totalSaving = saving * paymentTerms;
     this.remainingTotalSavings = saving * remainingPaymentTerms;
   }
 
@@ -461,6 +510,11 @@ public class DebtDto {
    * numero de pagos realizados
    */
   public void calculateProgress() {
+    if (remainingPaymentTerms < 0 || awardedPaymentTerms <= 0 || remainingPaymentTerms > awardedPaymentTerms) {
+      this.progress = 0;
+      return;
+    }
+
     this.progress = remainingPaymentTerms / awardedPaymentTerms;
   }
 
@@ -470,6 +524,20 @@ public class DebtDto {
     }
 
     return true;
+  }
+
+  private void validateStatusRate() {
+    double amount = getAmountAwarded();
+    double paymentTerm = getAwardedPaymentTerms();
+
+    if (this.typeDebt == 'R') {
+      amount = getBalance();
+      paymentTerm = getRevolverPaymentTerm();
+    }
+
+    if (externalRate > 0 && payment > 0 && amount > 0 && paymentTerm > 0) {
+      this.statusRate = "Calculable";
+    }
   }
 
   public String toJSONString() {
@@ -496,7 +564,9 @@ public class DebtDto {
         "\", \"consolidatedDebt\": " + (consolidatedDebt ? 1 : 0) +
         ", \"remainingTotalSavings\":" + LoanSimulator.round(remainingTotalSavings, 2) +
         ", \"statusDebt\":" + statusDebt +
-        ", \"isSelected\":" + isSelected + "}";
+        ", \"isSelected\":" + isSelected +
+        ", \"canBeSelected\":" + canBeSelected() +
+        "}";
   }
 
   @Override
@@ -516,7 +586,7 @@ public class DebtDto {
         "\", \"avance\":" + progress +
         ", \"fecha_inicio\":\"" + startDate +
         "\", \"tipo_deuda\": \"" + typeDebt +
-        "\", \"typeDebtName\": \"" + typeDebtName +
+        "\", \"nombre_tipo_deuda\": \"" + typeDebtName +
         "\", \"ahorro_cuota_mensual\":" + monthlySaving +
         ", \"ahorro_total\":" + totalSaving +
         ", \"estatus_tasa\":\"" + statusRate +
@@ -524,7 +594,9 @@ public class DebtDto {
         "\", \"deuda_consolidable\": " + (consolidatedDebt ? 1 : 0) +
         ", \"ahorro_total_restante\":" + remainingTotalSavings +
         ", \"estatus_deuda\":" + statusDebt +
-        ", \"seleccionado\":" + isSelected + "}";
+        ", \"seleccionado\":" + isSelected +
+        ", \"puede_seleccionarse\":" + canBeSelected() +
+        "}";
   }
 
 }

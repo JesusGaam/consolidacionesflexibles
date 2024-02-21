@@ -132,6 +132,10 @@ public class LoanSimulator {
     return (double) Math.round(number * nDigits) / nDigits;
   };
 
+  public static double round(double number) {
+    return round(number, 2);
+  };
+
   public static void main(String[] args) {
 
     /**
