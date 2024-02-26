@@ -76,6 +76,7 @@ public class CatSimulation {
 
     if (suggestedPayment > simulatorOffer.getMaxPayment()) {
       suggestedPayment = simulatorOffer.getMaxPayment();
+      return;
     }
 
     if (suggestedPayment < simulatorOffer.getMinPayment()) {
@@ -113,24 +114,30 @@ public class CatSimulation {
 
     double payment = loan.payment(amount, paymentTerm, ratefrequency);
 
-    while (payment > simulatorOffer.getMaxPayment()) {
-      payment = loan.payment(amount, ++paymentTerm, ratefrequency);
+    while (payment > simulatorOffer.getMaxPayment() && paymentTerm < simulatorOffer.getMaxPaymentTerm()) {
+      this.paymentTerm = paymentTerm + 1;
+      payment = loan.payment(amount, paymentTerm, ratefrequency);
     }
 
-    while (payment < simulatorOffer.getMinPayment()) {
-      payment = loan.payment(amount, --paymentTerm, ratefrequency);
+    while (payment < simulatorOffer.getMinPayment() && paymentTerm > simulatorOffer.getMinPaymentTerm()) {
+      this.paymentTerm = paymentTerm - 1;
+      payment = loan.payment(amount, paymentTerm, ratefrequency);
     }
 
     this.payment = LoanSimulator.round(payment);
   }
 
   private void findCat() {
-    if (amount <= 0 || commissionRate <= 0 || paymentTerm <= 0) {
+    if (amount <= 0 || paymentTerm <= 0) {
       cat = 0;
-      return;
+    }
+
+    if (commissionRate <= 0) {
+      commissionRate = 0;
     }
 
     double cashCommission = loan.cashCommission(amount, commissionRate, false);
+    double ratefrequency = loan.rateFrequency(rate, frequency, false);
     double paymentCat = loan.payment(amount, paymentTerm, ratefrequency);
     int periodsPerYear = loan.getFrequency(frequency).getPeriodsPerYearForCat();
 
@@ -148,5 +155,33 @@ public class CatSimulation {
         ", \"frequency\": \"" + frequency +
         "\", \"cat\":" + cat +
         "}";
+  }
+
+  public static void main(String[] args) {
+    // SimulatorOfferDto so = new SimulatorOfferDto()
+    // .setMaxAmount(613600.0)
+    // .setMinAmount(613600.0)
+    // .setRate(0.6193)
+    // .setMinPayment(308.7596227438041)
+    // .setMaxPayment(31287.480213814375)
+    // .setMinPaymentTerm(4)
+    // .setMaxPaymentTerm(54)
+    // .setFrequencies(new char[] { 'M', 'Q' });
+
+    SimulatorOfferDto so = new SimulatorOfferDto()
+        .setMaxAmount(30000.0)
+        .setMinAmount(30000.0)
+        .setRate(0.3582)
+        .setMinPayment(1861)
+        .setMaxPayment(3100)
+        .setMinPaymentTerm(12)
+        .setMaxPaymentTerm(24)
+        .setFrequencies(new char[] { 'M', 'Q' });
+    CatSimulation cat = new CatSimulation(
+        1200,
+        'M',
+        so);
+    System.out.println(cat);
+
   }
 }

@@ -338,10 +338,6 @@ public class FlexibleConsolidations {
         monthlyKuboPayment,
         'M',
         getSimulatorOffer());
-
-    System.out.println("================================");
-    System.out.println(getSimulatorOffer());
-    System.out.println("================================");
   }
 
   public void updateOffer() {

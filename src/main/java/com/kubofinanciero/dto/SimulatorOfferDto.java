@@ -118,48 +118,59 @@ public class SimulatorOfferDto {
     return frequencies;
   }
 
-  public void setLoanType(String loanType) {
+  public SimulatorOfferDto setLoanType(String loanType) {
     this.loanType = loanType;
+    return this;
   }
 
-  public void setSubLoanType(String subLoanType) {
+  public SimulatorOfferDto setSubLoanType(String subLoanType) {
     this.subLoanType = subLoanType;
+    return this;
   }
 
-  public void setMinAmount(double minAmount) {
+  public SimulatorOfferDto setMinAmount(double minAmount) {
     this.minAmount = minAmount;
+    return this;
   }
 
-  public void setMaxAmount(double maxAmount) {
+  public SimulatorOfferDto setMaxAmount(double maxAmount) {
     this.maxAmount = maxAmount;
+    return this;
   }
 
-  public void setMinPayment(double minPayment) {
+  public SimulatorOfferDto setMinPayment(double minPayment) {
     this.minPayment = minPayment;
+    return this;
   }
 
-  public void setMaxPayment(double maxPayment) {
+  public SimulatorOfferDto setMaxPayment(double maxPayment) {
     this.maxPayment = maxPayment;
+    return this;
   }
 
-  public void setMinPaymentTerm(int minPaymentTerm) {
+  public SimulatorOfferDto setMinPaymentTerm(int minPaymentTerm) {
     this.minPaymentTerm = minPaymentTerm;
+    return this;
   }
 
-  public void setMaxPaymentTerm(int maxPaymentTerm) {
+  public SimulatorOfferDto setMaxPaymentTerm(int maxPaymentTerm) {
     this.maxPaymentTerm = maxPaymentTerm;
+    return this;
   }
 
-  public void setRate(double rate) {
+  public SimulatorOfferDto setRate(double rate) {
     this.rate = rate;
+    return this;
   }
 
-  public void setCommissionRate(double commissionRate) {
+  public SimulatorOfferDto setCommissionRate(double commissionRate) {
     this.commissionRate = commissionRate;
+    return this;
   }
 
-  public void setFrequencies(char[] frequencies) {
+  public SimulatorOfferDto setFrequencies(char[] frequencies) {
     this.frequencies = frequencies;
+    return this;
   }
 
   private String frequenciesToString() {
