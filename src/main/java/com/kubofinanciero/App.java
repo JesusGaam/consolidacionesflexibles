@@ -15,8 +15,8 @@ public class App {
     FlexibleConsolidations flexCons = new FlexibleConsolidations(consolidationOffer);
     flexCons.initOffer();
 
-    // flexCons.getConsolidationOffer().getBuroDebts().get(2).setSelected(false);
-    // flexCons.updateOffer();
+    flexCons.getConsolidationOffer().getBuroDebts().get(7).setExternalRate(0.3);
+    flexCons.updateOffer();
 
     // flexCons.getConsolidationOffer().getBuroDebts().get(2)
     // .setSelected(true)
