@@ -653,15 +653,22 @@ public class FlexibleConsolidations {
     this.consolidableMissingAmount = LoanSimulator.round(totalAmountToConsolidate - this.offerAmount);
   }
 
-  public String toJSONStringPdf(String firstname) {
+  public String toJSONStringPdf(String firstname, String email) {
     if (firstname != null) {
       firstname = " \"firstname\": \"" + firstname + "\",";
     } else {
       firstname = "";
     }
 
+    if (email != null) {
+      email = " \"email\": \"" + email + "\",";
+    } else {
+      email = "";
+    }
+
     return "{" +
         firstname +
+        email +
         "\"offerAmount\":" + offerAmount +
         ", \"offerRate\":" + offerRate +
         ", \"monthlyExternalPayment\":" + monthlyExternalPayment +
