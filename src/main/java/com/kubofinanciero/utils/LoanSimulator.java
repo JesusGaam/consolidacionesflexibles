@@ -55,7 +55,7 @@ public class LoanSimulator {
     return payment * totalPayments;
   }
 
-  public double cashCommission(double amount, double commissionPercent, boolean iva) {
+  public static double cashCommission(double amount, double commissionPercent, boolean iva) {
     double ivaPercentage = iva ? 1.16 : 1;
     return amount * commissionPercent * ivaPercentage;
   }

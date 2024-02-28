@@ -10,7 +10,8 @@ import com.kubofinanciero.utils.LoanSimulator;
  * Atributos:
  *  offerAmount: Monto final de la oferta
  *  offerRate: Tasa kubo final de oferta 
- *  offerComission: Tasa de comision final de oferta
+ *  offerCommission: Tasa de comision final de oferta
+ *  offerCommissionAmount: monto de comisión de oferta
  *  offerStatus: Status global de oferta 
  *  weightedRate: Tasa ponderada (promedio), obtenida de las deudas seleccionadas
  *  weightedRateType: Tipo de tasa ponderada, determina si para el calculo de la tasa ponderada se conocieron todas las tasas de las deudas
@@ -46,7 +47,8 @@ public class FlexibleConsolidations {
 
   private double offerAmount;
   private double offerRate;
-  private double offerComission;
+  private double offerCommission;
+  private double offerCommissionAmount;
   private int offerStatus;
   private double weightedRate;
   private int weightedRateType;
@@ -78,7 +80,7 @@ public class FlexibleConsolidations {
   public FlexibleConsolidations(
       double offerAmount,
       double offerRate,
-      double offerComission,
+      double offerCommission,
       int offerStatus,
       double weightedRate,
       double totalSaving,
@@ -92,7 +94,7 @@ public class FlexibleConsolidations {
 
     this.offerAmount = offerAmount;
     this.offerRate = offerRate;
-    this.offerComission = offerComission;
+    this.offerCommission = offerCommission;
     this.offerStatus = offerStatus;
     this.weightedRate = weightedRate;
     this.totalSaving = totalSaving;
@@ -113,8 +115,8 @@ public class FlexibleConsolidations {
     return offerRate;
   }
 
-  public double getOfferComission() {
-    return offerComission;
+  public double getOfferCommission() {
+    return offerCommission;
   }
 
   public int getOfferStatus() {
@@ -227,7 +229,9 @@ public class FlexibleConsolidations {
     for (int i = 0; i < rates.length; i++) {
       if (offerRate == rates[i]) {
         this.offerRate = rates[i];
-        this.offerComission = comissions[i];
+        this.offerCommission = comissions[i];
+        this.offerCommissionAmount = LoanSimulator
+            .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), true));
         updateOfferRateOnBuroDebts();
 
         this.offerStatus = STATUS_RATE_MODIFIED_BY_ADVISOR;
@@ -241,10 +245,10 @@ public class FlexibleConsolidations {
    * automaticamnete. Al agregar una comisión, asignará la tasa que corresmonde a
    * la misma.
    * 
-   * @param offerComission Comissión que el asesor decide definir manualmente,
+   * @param offerCommission Comissión que el asesor decide definir manualmente,
    * solo se pueden agregar comisiones que estan dentro de la lista de asistidas.
    */
-  public void setOfferComission(double offerComission) {
+  public void setOfferCommission(double offerCommission) {
     if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
       return;
     }
@@ -253,9 +257,12 @@ public class FlexibleConsolidations {
     double[] comissions = getConsolidationOffer().getCommissionRateList();
 
     for (int i = 0; i < comissions.length; i++) {
-      if (offerComission == comissions[i]) {
+      if (offerCommission == comissions[i]) {
         this.offerRate = rates[i];
-        this.offerComission = comissions[i];
+        this.offerCommission = comissions[i];
+        this.offerCommissionAmount = LoanSimulator
+            .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), true));
+
         updateOfferRateOnBuroDebts();
 
         this.offerStatus = STATUS_RATE_MODIFIED_BY_ADVISOR;
@@ -332,16 +339,12 @@ public class FlexibleConsolidations {
     getSimulatorOffer().setMinAmount(this.offerAmount);
     getSimulatorOffer().setMaxAmount(this.offerAmount);
     getSimulatorOffer().setRate(this.offerRate);
-    getSimulatorOffer().setCommissionRate(this.offerComission);
+    getSimulatorOffer().setCommissionRate(this.offerCommission);
 
     catSimulation = new CatSimulation(
         monthlyKuboPayment,
         'M',
         getSimulatorOffer());
-
-    System.out.println("================================");
-    System.out.println(getSimulatorOffer());
-    System.out.println("================================");
   }
 
   public void updateOffer() {
@@ -411,6 +414,8 @@ public class FlexibleConsolidations {
       }
     }
     this.offerAmount = LoanSimulator.round(offerAmount);
+    this.offerCommissionAmount = LoanSimulator
+        .round(LoanSimulator.cashCommission(this.offerAmount, getOfferCommission(), true));
 
     if (this.offerAmount > getConsolidationOffer().getMaxAmount()) {
       this.offerStatus = STATUS_EXCEEDED_AMOUNT;
@@ -500,7 +505,8 @@ public class FlexibleConsolidations {
 
     if (ratesList.length > 0 && ratesList.length != commissionsList.length) {
       this.offerRate = 0;
-      this.offerComission = 0;
+      this.offerCommission = 0;
+      this.offerCommissionAmount = 0;
       // STATUS: ERROR DE CALCULO
       return;
     }
@@ -513,7 +519,10 @@ public class FlexibleConsolidations {
 
     if (defaultRate || kuboRate * 1.1 <= this.weightedRate) {
       this.offerRate = kuboRate;
-      this.offerComission = kuboRateComission;
+      this.offerCommission = kuboRateComission;
+      this.offerCommissionAmount = LoanSimulator
+          .round(LoanSimulator.cashCommission(kuboRateComission, getOfferAmount(), true));
+
       updateOfferRateOnBuroDebts();
 
       if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
@@ -532,14 +541,18 @@ public class FlexibleConsolidations {
 
         if (flexibleRate > rate) {
           this.offerRate = rate;
-          this.offerComission = commission;
+          this.offerCommission = commission;
+          this.offerCommissionAmount = LoanSimulator
+              .round(LoanSimulator.cashCommission(commission, getOfferAmount(), true));
 
           break;
         }
       }
     } else {
       this.offerRate = minFlexibleRate;
-      this.offerComission = minFlexibleComission;
+      this.offerCommission = minFlexibleComission;
+      this.offerCommissionAmount = LoanSimulator
+          .round(LoanSimulator.cashCommission(minFlexibleComission, getOfferAmount(), true));
     }
 
     updateOfferRateOnBuroDebts();
@@ -640,30 +653,37 @@ public class FlexibleConsolidations {
     this.consolidableMissingAmount = LoanSimulator.round(totalAmountToConsolidate - this.offerAmount);
   }
 
-  public String toJSONStringPdf(String firstname) {
+  public String toJSONStringPdf(String firstname, String email) {
     if (firstname != null) {
       firstname = " \"firstname\": \"" + firstname + "\",";
     } else {
       firstname = "";
     }
 
+    if (email != null) {
+      email = " \"email\": \"" + email + "\",";
+    } else {
+      email = "";
+    }
+
     return "{" +
         firstname +
-        "\"offerAmount\":" + offerAmount +
-        ", \"offerRate\":" + offerRate +
-        ", \"monthlyExternalPayment\":" + monthlyExternalPayment +
-        ", \"maxDebtsRate\":" + maxDebtsRate +
-        ", \"totalSelectedDebts\":" + totalSelectedDebts +
+        email +
+        "\"offerAmount\":\"" + GenericUtilities.toCurrencyFormat(offerAmount) +
+        "\" , \"offerRate\": \"" + LoanSimulator.round(offerRate * 100) + "%" +
+        "\" , \"monthlyExternalPayment\": \"" + GenericUtilities.toCurrencyFormat(monthlyExternalPayment) +
+        "\", \"maxDebtsRate\": \"" + LoanSimulator.round(maxDebtsRate * 100) + "%" +
+        "\", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
-        ", \"totalSaving\":" + totalSaving +
-        ", \"monthlySavings\":" + monthlySavings +
-        ", \"totalSavingAllDebts\":" + totalSavingAllDebts +
-        ", \"monthlySavingAllDebts\":" + monthlySavingAllDebts +
-        ", \"totalSavingMissingDebts\":" + totalSavingMissingDebts +
-        ", \"monthlySavingsMissingDebts\":" + monthlySavingsMissingDebts +
-        ", \"totalAmountToConsolidate\":" + totalAmountToConsolidate +
-        ", \"consolidableMissingAmount\":" + consolidableMissingAmount +
-        ", \"cat\":" + catSimulation.getCat() +
+        ", \"totalSaving\": \"" + GenericUtilities.toCurrencyFormat(totalSaving) +
+        "\" , \"monthlySavings\": \"" + GenericUtilities.toCurrencyFormat(monthlySavings) +
+        "\" , \"totalSavingAllDebts\": \"" + GenericUtilities.toCurrencyFormat(totalSavingAllDebts) +
+        "\" , \"monthlySavingAllDebts\": \"" + GenericUtilities.toCurrencyFormat(monthlySavingAllDebts) +
+        "\" , \"totalSavingMissingDebts\": \"" + GenericUtilities.toCurrencyFormat(totalSavingMissingDebts) +
+        "\" , \"monthlySavingsMissingDebts\": \"" + GenericUtilities.toCurrencyFormat(monthlySavingsMissingDebts) +
+        "\" , \"totalAmountToConsolidate\": \"" + GenericUtilities.toCurrencyFormat(totalAmountToConsolidate) +
+        "\" , \"consolidableMissingAmount\": \"" + GenericUtilities.toCurrencyFormat(consolidableMissingAmount) +
+        "\" , \"cat\":" + catSimulation.getCat() +
         ", \"buroDebts\":" + consolidationOffer.buroDebtsToJSONString() +
         "}";
   }
@@ -671,7 +691,8 @@ public class FlexibleConsolidations {
   public String toJSONString() {
     return "{\"offerAmount\":" + offerAmount +
         ", \"offerRate\":" + offerRate +
-        ", \"offerComission\":" + offerComission +
+        ", \"offerCommission\":" + offerCommission +
+        ", \"offerCommissionAmount\":" + offerCommissionAmount +
         ", \"offerStatus\":" + offerStatus +
         ", \"weightedRate\":" + weightedRate +
         ", \"weightedRateType\":" + weightedRateType +
@@ -699,7 +720,8 @@ public class FlexibleConsolidations {
   public String toString() {
     return "{\"offerAmount\":" + offerAmount +
         ", \"offerRate\":" + offerRate +
-        ", \"offerComission\":" + offerComission +
+        ", \"offerCommission\":" + offerCommission +
+        ", \"offerCommissionAmount\":" + offerCommissionAmount +
         ", \"offerStatus\":" + offerStatus +
         ", \"weightedRate\":" + weightedRate +
         ", \"weightedRateType\":" + weightedRateType +
