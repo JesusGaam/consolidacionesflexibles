@@ -669,21 +669,21 @@ public class FlexibleConsolidations {
     return "{" +
         firstname +
         email +
-        "\"offerAmount\":" + offerAmount +
-        ", \"offerRate\":" + offerRate +
-        ", \"monthlyExternalPayment\":" + monthlyExternalPayment +
-        ", \"maxDebtsRate\":" + maxDebtsRate +
-        ", \"totalSelectedDebts\":" + totalSelectedDebts +
+        "\"offerAmount\":\"" + GenericUtilities.toCurrencyFormat(offerAmount) +
+        "\" , \"offerRate\": \"" + LoanSimulator.round(offerRate * 100) + "%" +
+        "\" , \"monthlyExternalPayment\": \"" + GenericUtilities.toCurrencyFormat(monthlyExternalPayment) +
+        "\", \"maxDebtsRate\": \"" + LoanSimulator.round(maxDebtsRate * 100) + "%" +
+        "\", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
-        ", \"totalSaving\":" + totalSaving +
-        ", \"monthlySavings\":" + monthlySavings +
-        ", \"totalSavingAllDebts\":" + totalSavingAllDebts +
-        ", \"monthlySavingAllDebts\":" + monthlySavingAllDebts +
-        ", \"totalSavingMissingDebts\":" + totalSavingMissingDebts +
-        ", \"monthlySavingsMissingDebts\":" + monthlySavingsMissingDebts +
-        ", \"totalAmountToConsolidate\":" + totalAmountToConsolidate +
-        ", \"consolidableMissingAmount\":" + consolidableMissingAmount +
-        ", \"cat\":" + catSimulation.getCat() +
+        ", \"totalSaving\": \"" + GenericUtilities.toCurrencyFormat(totalSaving) +
+        "\" , \"monthlySavings\": \"" + GenericUtilities.toCurrencyFormat(monthlySavings) +
+        "\" , \"totalSavingAllDebts\": \"" + GenericUtilities.toCurrencyFormat(totalSavingAllDebts) +
+        "\" , \"monthlySavingAllDebts\": \"" + GenericUtilities.toCurrencyFormat(monthlySavingAllDebts) +
+        "\" , \"totalSavingMissingDebts\": \"" + GenericUtilities.toCurrencyFormat(totalSavingMissingDebts) +
+        "\" , \"monthlySavingsMissingDebts\": \"" + GenericUtilities.toCurrencyFormat(monthlySavingsMissingDebts) +
+        "\" , \"totalAmountToConsolidate\": \"" + GenericUtilities.toCurrencyFormat(totalAmountToConsolidate) +
+        "\" , \"consolidableMissingAmount\": \"" + GenericUtilities.toCurrencyFormat(consolidableMissingAmount) +
+        "\" , \"cat\":" + catSimulation.getCat() +
         ", \"buroDebts\":" + consolidationOffer.buroDebtsToJSONString() +
         "}";
   }

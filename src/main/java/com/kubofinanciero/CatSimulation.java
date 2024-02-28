@@ -1,5 +1,7 @@
 package com.kubofinanciero;
 
+import java.util.Date;
+
 import com.kubofinanciero.dto.SimulatorOfferDto;
 import com.kubofinanciero.utils.CAT;
 import com.kubofinanciero.utils.LoanSimulator;
@@ -13,6 +15,7 @@ public class CatSimulation {
   private int paymentTerm;
   private char frequency;
   private double cat;
+  private String calculationDate;
   private LoanSimulator loan = new LoanSimulator();
   private SimulatorOfferDto simulatorOffer;
   private double ratefrequency;
@@ -34,6 +37,7 @@ public class CatSimulation {
     this.frequency = frequency;
     ratefrequency = loan.rateFrequency(rate, frequency, true);
 
+    getCalculationDate();
     validateSuggestedPayment();
     findPaymentTerm();
     findPayment();
@@ -66,6 +70,14 @@ public class CatSimulation {
 
   public double getCat() {
     return cat;
+  }
+
+  public String getCalculationDate() {
+    if (calculationDate == null) {
+      calculationDate = GenericUtilities.toStringDate(new Date());
+    }
+
+    return calculationDate;
   }
 
   private void validateSuggestedPayment() {
@@ -136,7 +148,7 @@ public class CatSimulation {
       commissionRate = 0;
     }
 
-    double cashCommission = loan.cashCommission(amount, commissionRate, false);
+    double cashCommission = LoanSimulator.cashCommission(amount, commissionRate, false);
     double ratefrequency = loan.rateFrequency(rate, frequency, false);
     double paymentCat = loan.payment(amount, paymentTerm, ratefrequency);
     int periodsPerYear = loan.getFrequency(frequency).getPeriodsPerYearForCat();
@@ -154,19 +166,11 @@ public class CatSimulation {
         ", \"paymentTerm\":" + paymentTerm +
         ", \"frequency\": \"" + frequency +
         "\", \"cat\":" + cat +
+        ", \"calculationDate\": \"" + calculationDate +
         "}";
   }
 
   public static void main(String[] args) {
-    // SimulatorOfferDto so = new SimulatorOfferDto()
-    // .setMaxAmount(613600.0)
-    // .setMinAmount(613600.0)
-    // .setRate(0.6193)
-    // .setMinPayment(308.7596227438041)
-    // .setMaxPayment(31287.480213814375)
-    // .setMinPaymentTerm(4)
-    // .setMaxPaymentTerm(54)
-    // .setFrequencies(new char[] { 'M', 'Q' });
 
     SimulatorOfferDto so = new SimulatorOfferDto()
         .setMaxAmount(30000.0)
