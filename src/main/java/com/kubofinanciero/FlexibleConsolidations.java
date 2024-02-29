@@ -3,6 +3,7 @@ package com.kubofinanciero;
 import com.kubofinanciero.dto.ConsolidationOfferDto;
 import com.kubofinanciero.dto.DebtDto;
 import com.kubofinanciero.dto.SimulatorOfferDto;
+import com.kubofinanciero.utils.GenericUtilities;
 import com.kubofinanciero.utils.LoanSimulator;
 
 /*
@@ -230,7 +231,7 @@ public class FlexibleConsolidations {
       if (offerRate == rates[i]) {
         this.offerRate = rates[i];
         this.offerCommission = comissions[i];
-        this.offerCommissionAmount = LoanSimulator
+        this.offerCommissionAmount = GenericUtilities
             .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), true));
         updateOfferRateOnBuroDebts();
 
@@ -260,7 +261,7 @@ public class FlexibleConsolidations {
       if (offerCommission == comissions[i]) {
         this.offerRate = rates[i];
         this.offerCommission = comissions[i];
-        this.offerCommissionAmount = LoanSimulator
+        this.offerCommissionAmount = GenericUtilities
             .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), true));
 
         updateOfferRateOnBuroDebts();
@@ -413,8 +414,8 @@ public class FlexibleConsolidations {
         }
       }
     }
-    this.offerAmount = LoanSimulator.round(offerAmount);
-    this.offerCommissionAmount = LoanSimulator
+    this.offerAmount = GenericUtilities.round(offerAmount);
+    this.offerCommissionAmount = GenericUtilities
         .round(LoanSimulator.cashCommission(this.offerAmount, getOfferCommission(), true));
 
     if (this.offerAmount > getConsolidationOffer().getMaxAmount()) {
@@ -520,7 +521,7 @@ public class FlexibleConsolidations {
     if (defaultRate || kuboRate * 1.1 <= this.weightedRate) {
       this.offerRate = kuboRate;
       this.offerCommission = kuboRateComission;
-      this.offerCommissionAmount = LoanSimulator
+      this.offerCommissionAmount = GenericUtilities
           .round(LoanSimulator.cashCommission(kuboRateComission, getOfferAmount(), true));
 
       updateOfferRateOnBuroDebts();
@@ -542,7 +543,7 @@ public class FlexibleConsolidations {
         if (flexibleRate > rate) {
           this.offerRate = rate;
           this.offerCommission = commission;
-          this.offerCommissionAmount = LoanSimulator
+          this.offerCommissionAmount = GenericUtilities
               .round(LoanSimulator.cashCommission(commission, getOfferAmount(), true));
 
           break;
@@ -551,7 +552,7 @@ public class FlexibleConsolidations {
     } else {
       this.offerRate = minFlexibleRate;
       this.offerCommission = minFlexibleComission;
-      this.offerCommissionAmount = LoanSimulator
+      this.offerCommissionAmount = GenericUtilities
           .round(LoanSimulator.cashCommission(minFlexibleComission, getOfferAmount(), true));
     }
 
@@ -603,14 +604,14 @@ public class FlexibleConsolidations {
       }
     }
 
-    this.totalSaving = LoanSimulator.round(totalSaving);
-    this.monthlySavings = LoanSimulator.round(monthlySaving);
+    this.totalSaving = GenericUtilities.round(totalSaving);
+    this.monthlySavings = GenericUtilities.round(monthlySaving);
 
-    this.totalSavingAllDebts = LoanSimulator.round(totalSavingAllDebts);
-    this.monthlySavingAllDebts = LoanSimulator.round(monthlySavingAllDebts);
+    this.totalSavingAllDebts = GenericUtilities.round(totalSavingAllDebts);
+    this.monthlySavingAllDebts = GenericUtilities.round(monthlySavingAllDebts);
 
-    this.totalSavingMissingDebts = LoanSimulator.round(totalSavingAllDebts - totalSaving);
-    this.monthlySavingsMissingDebts = LoanSimulator.round(monthlySavingAllDebts - monthlySaving);
+    this.totalSavingMissingDebts = GenericUtilities.round(totalSavingAllDebts - totalSaving);
+    this.monthlySavingsMissingDebts = GenericUtilities.round(monthlySavingAllDebts - monthlySaving);
     // this.benefitType
   }
 
@@ -646,11 +647,11 @@ public class FlexibleConsolidations {
       }
     }
 
-    this.excedentAmount = LoanSimulator.round(excedentAmount);
-    this.monthlyExternalPayment = LoanSimulator.round(monthlyExternalPayment);
+    this.excedentAmount = GenericUtilities.round(excedentAmount);
+    this.monthlyExternalPayment = GenericUtilities.round(monthlyExternalPayment);
     this.monthlyKuboPayment = monthlyKuboPayment;
-    this.totalAmountToConsolidate = LoanSimulator.round(totalAmountToConsolidate);
-    this.consolidableMissingAmount = LoanSimulator.round(totalAmountToConsolidate - this.offerAmount);
+    this.totalAmountToConsolidate = GenericUtilities.round(totalAmountToConsolidate);
+    this.consolidableMissingAmount = GenericUtilities.round(totalAmountToConsolidate - this.offerAmount);
   }
 
   public String toJSONStringPdf(String firstname, String email) {
@@ -670,9 +671,9 @@ public class FlexibleConsolidations {
         firstname +
         email +
         "\"offerAmount\":\"" + GenericUtilities.toCurrencyFormat(offerAmount) +
-        "\" , \"offerRate\": \"" + LoanSimulator.round(offerRate * 100) + "%" +
+        "\" , \"offerRate\": \"" + GenericUtilities.round(offerRate * 100) + "%" +
         "\" , \"monthlyExternalPayment\": \"" + GenericUtilities.toCurrencyFormat(monthlyExternalPayment) +
-        "\", \"maxDebtsRate\": \"" + LoanSimulator.round(maxDebtsRate * 100) + "%" +
+        "\", \"maxDebtsRate\": \"" + GenericUtilities.round(maxDebtsRate * 100) + "%" +
         "\", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
         ", \"totalSaving\": \"" + GenericUtilities.toCurrencyFormat(totalSaving) +
@@ -683,8 +684,8 @@ public class FlexibleConsolidations {
         "\" , \"monthlySavingsMissingDebts\": \"" + GenericUtilities.toCurrencyFormat(monthlySavingsMissingDebts) +
         "\" , \"totalAmountToConsolidate\": \"" + GenericUtilities.toCurrencyFormat(totalAmountToConsolidate) +
         "\" , \"consolidableMissingAmount\": \"" + GenericUtilities.toCurrencyFormat(consolidableMissingAmount) +
-        "\" , \"cat\":" + catSimulation.getCat() +
-        ", \"buroDebts\":" + consolidationOffer.buroDebtsToJSONString() +
+        "\" , \"cat\": \"" + catSimulation.getCat() + "%" +
+        "\" , \"buroDebts\":" + consolidationOffer.buroDebtsToJSONFormattedString() +
         "}";
   }
 

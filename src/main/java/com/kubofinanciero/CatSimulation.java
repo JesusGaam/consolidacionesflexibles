@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.kubofinanciero.dto.SimulatorOfferDto;
 import com.kubofinanciero.utils.CAT;
+import com.kubofinanciero.utils.GenericUtilities;
 import com.kubofinanciero.utils.LoanSimulator;
 
 public class CatSimulation {
@@ -136,7 +137,7 @@ public class CatSimulation {
       payment = loan.payment(amount, paymentTerm, ratefrequency);
     }
 
-    this.payment = LoanSimulator.round(payment);
+    this.payment = GenericUtilities.round(payment);
   }
 
   private void findCat() {
@@ -154,7 +155,7 @@ public class CatSimulation {
     int periodsPerYear = loan.getFrequency(frequency).getPeriodsPerYearForCat();
 
     double fullCat = new CAT(amount, cashCommission, paymentCat, paymentTerm, periodsPerYear).getCAT();
-    cat = LoanSimulator.round(fullCat, 1);
+    cat = GenericUtilities.round(fullCat, 1);
   }
 
   @Override
@@ -167,7 +168,7 @@ public class CatSimulation {
         ", \"frequency\": \"" + frequency +
         "\", \"cat\":" + cat +
         ", \"calculationDate\": \"" + calculationDate +
-        "}";
+        "\"}";
   }
 
   public static void main(String[] args) {

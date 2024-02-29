@@ -2,6 +2,7 @@ package com.kubofinanciero.dto;
 
 import java.util.HashMap;
 
+import com.kubofinanciero.utils.GenericUtilities;
 import com.kubofinanciero.utils.LoanSimulator;
 
 public class DebtDto {
@@ -540,14 +541,43 @@ public class DebtDto {
     }
   }
 
+  public String toJSONFormattedString() {
+
+    return "{\"registry\":" + registry +
+        ", \"financialEntity\":\"" + financialEntity +
+        "\", \"amountAwarded\": \"" + GenericUtilities.toCurrencyFormat(amountAwarded) +
+        "\", \"payment\": \"" + GenericUtilities.toCurrencyFormat(payment) +
+        "\", \"monthlyKuboPayment\": \"" + GenericUtilities.toCurrencyFormat(monthlyKuboPayment) +
+        "\", \"balance\": \"" + GenericUtilities.toCurrencyFormat(balance) +
+        "\", \"externalRate\": \"" + GenericUtilities.round(externalRate * 100) + "%" +
+        "\", \"kuboRate\": \"" + GenericUtilities.round(kuboRate * 100) + "%" +
+        "\", \"awardedPaymentTerms\":" + awardedPaymentTerms +
+        ", \"remainingPaymentTerms\":" + remainingPaymentTerms +
+        ", \"externalFrequency\":\"" + externalFrequency +
+        "\", \"progress\":" + progress +
+        ", \"startDate\":\"" + startDate +
+        "\", \"typeDebt\": \"" + typeDebt +
+        "\", \"typeDebtName\": \"" + typeDebtName +
+        "\", \"monthlySaving\": \"" + GenericUtilities.toCurrencyFormat(monthlySaving) +
+        "\", \"totalSaving\": \"" + GenericUtilities.toCurrencyFormat(totalSaving) +
+        "\", \"statusRate\": \"" + statusRate +
+        "\", \"revolverType\": \"" + revolverType +
+        "\", \"consolidatedDebt\": " + (consolidatedDebt ? 1 : 0) +
+        ", \"remainingTotalSavings\": \"" + GenericUtilities.toCurrencyFormat(remainingTotalSavings) +
+        "\", \"statusDebt\":" + statusDebt +
+        ", \"isSelected\":" + isSelected +
+        ", \"canBeSelected\":" + canBeSelected() +
+        "}";
+  }
+
   public String toJSONString() {
 
     return "{\"registry\":" + registry +
         ", \"financialEntity\":\"" + financialEntity +
-        "\", \"amountAwarded\":" + LoanSimulator.round(amountAwarded, 2) +
-        ", \"payment\":" + LoanSimulator.round(payment, 2) +
-        ", \"monthlyKuboPayment\":" + LoanSimulator.round(monthlyKuboPayment, 2) +
-        ", \"balance\":" + LoanSimulator.round(balance, 2) +
+        "\", \"amountAwarded\":" + GenericUtilities.round(amountAwarded) +
+        ", \"payment\":" + GenericUtilities.round(payment) +
+        ", \"monthlyKuboPayment\":" + GenericUtilities.round(monthlyKuboPayment) +
+        ", \"balance\":" + GenericUtilities.round(balance) +
         ", \"externalRate\":" + externalRate +
         ", \"kuboRate\":" + kuboRate +
         ", \"awardedPaymentTerms\":" + awardedPaymentTerms +
@@ -557,12 +587,12 @@ public class DebtDto {
         ", \"startDate\":\"" + startDate +
         "\", \"typeDebt\": \"" + typeDebt +
         "\", \"typeDebtName\": \"" + typeDebtName +
-        "\", \"monthlySaving\":" + LoanSimulator.round(monthlySaving, 2) +
-        ", \"totalSaving\":" + LoanSimulator.round(totalSaving, 2) +
+        "\", \"monthlySaving\":" + GenericUtilities.round(monthlySaving) +
+        ", \"totalSaving\":" + GenericUtilities.round(totalSaving) +
         ", \"statusRate\":\"" + statusRate +
         "\", \"revolverType\":\"" + revolverType +
         "\", \"consolidatedDebt\": " + (consolidatedDebt ? 1 : 0) +
-        ", \"remainingTotalSavings\":" + LoanSimulator.round(remainingTotalSavings, 2) +
+        ", \"remainingTotalSavings\":" + GenericUtilities.round(remainingTotalSavings) +
         ", \"statusDebt\":" + statusDebt +
         ", \"isSelected\":" + isSelected +
         ", \"canBeSelected\":" + canBeSelected() +

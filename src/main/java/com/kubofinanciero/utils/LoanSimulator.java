@@ -99,20 +99,20 @@ public class LoanSimulator {
     double interest;
     double capital = 0;
 
-    payment = round(payment, 2);
+    payment = GenericUtilities.round(payment);
     for (int i = 1; i <= totalPayments; i++) {
       initialBalance = i == 1 ? amount : finalBalance;
 
       if (i < totalPayments) {
-        interest = round(interests(initialBalance, rateFrequency), 2);
-        capital = round(payment - interest, 2);
-        sumCapital = round(sumCapital + capital, 2);
+        interest = GenericUtilities.round(interests(initialBalance, rateFrequency));
+        capital = GenericUtilities.round(payment - interest);
+        sumCapital = GenericUtilities.round(sumCapital + capital);
       } else {
-        capital = round(amount - sumCapital, 2);
-        interest = round(interests(capital, rateFrequency), 2);
+        capital = GenericUtilities.round(amount - sumCapital);
+        interest = GenericUtilities.round(interests(capital, rateFrequency));
       }
 
-      finalBalance = round(initialBalance - capital, 2);
+      finalBalance = GenericUtilities.round(initialBalance - capital);
       AmortizationTableData amortizationData = new AmortizationTableData(
           i,
           initialBalance,
@@ -126,15 +126,6 @@ public class LoanSimulator {
 
     return amortizationTable;
   }
-
-  public static double round(double number, int nDigits) {
-    nDigits = nDigits > 0 ? (int) Math.pow(10, nDigits) : 1;
-    return (double) Math.round(number * nDigits) / nDigits;
-  };
-
-  public static double round(double number) {
-    return round(number, 2);
-  };
 
   public static void main(String[] args) {
 
