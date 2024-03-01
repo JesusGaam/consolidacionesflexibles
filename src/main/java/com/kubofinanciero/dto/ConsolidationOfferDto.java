@@ -289,14 +289,6 @@ public class ConsolidationOfferDto {
     return ("[" + buroDebts + "]").replace(",]", "]");
   }
 
-  public String buroDebtsToJSONFormattedString() {
-    String buroDebts = "";
-    for (int i = 0; i < this.buroDebts.size(); i++) {
-      buroDebts += this.buroDebts.get(i).toJSONFormattedString() + ",";
-    }
-    return ("[" + buroDebts + "]").replace(",]", "]");
-  }
-
   public String toJSONString() {
     return "{ \"prospectusId\":" + prospectusId +
         ", \"maxClientAmount\":" + maxClientAmount +

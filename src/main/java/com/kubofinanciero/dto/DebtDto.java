@@ -466,7 +466,6 @@ public class DebtDto {
       return;
     }
 
-    LoanSimulator ls = new LoanSimulator();
     double amount = getAmountAwarded();
     int paymentTerms = getAwardedPaymentTerms();
     int remainingPaymentTerms = getRemainingPaymentTerms();
@@ -479,12 +478,12 @@ public class DebtDto {
       remainingPaymentTerms = getRevolverPaymentTerm();
       externalFrequency = REVOLVER_FREQUENCY;
 
-      double rate = ls.rateFrequency(getExternalRate(), externalFrequency, true);
-      payment = ls.payment(amount, paymentTerms, rate);
+      double rate = LoanSimulator.rateFrequency(getExternalRate(), externalFrequency, true);
+      payment = LoanSimulator.payment(amount, paymentTerms, rate);
     }
 
-    double rate = ls.rateFrequency(kuboRate, externalFrequency, true);
-    double kuboPayment = ls.payment(amount, paymentTerms, rate);
+    double rate = LoanSimulator.rateFrequency(kuboRate, externalFrequency, true);
+    double kuboPayment = LoanSimulator.payment(amount, paymentTerms, rate);
     double saving = payment > kuboPayment ? payment - kuboPayment : 0;
 
     this.monthlyKuboPayment = convertToMonthlyPayment(kuboPayment);
@@ -539,35 +538,6 @@ public class DebtDto {
     if (externalRate > 0 && payment > 0 && amount > 0 && paymentTerm > 0) {
       this.statusRate = "Calculable";
     }
-  }
-
-  public String toJSONFormattedString() {
-
-    return "{\"registry\":" + registry +
-        ", \"financialEntity\":\"" + financialEntity +
-        "\", \"amountAwarded\": \"" + GenericUtilities.toCurrencyFormat(amountAwarded) +
-        "\", \"payment\": \"" + GenericUtilities.toCurrencyFormat(payment) +
-        "\", \"monthlyKuboPayment\": \"" + GenericUtilities.toCurrencyFormat(monthlyKuboPayment) +
-        "\", \"balance\": \"" + GenericUtilities.toCurrencyFormat(balance) +
-        "\", \"externalRate\": \"" + GenericUtilities.round(externalRate * 100) + "%" +
-        "\", \"kuboRate\": \"" + GenericUtilities.round(kuboRate * 100) + "%" +
-        "\", \"awardedPaymentTerms\":" + awardedPaymentTerms +
-        ", \"remainingPaymentTerms\":" + remainingPaymentTerms +
-        ", \"externalFrequency\":\"" + externalFrequency +
-        "\", \"progress\":" + progress +
-        ", \"startDate\":\"" + startDate +
-        "\", \"typeDebt\": \"" + typeDebt +
-        "\", \"typeDebtName\": \"" + typeDebtName +
-        "\", \"monthlySaving\": \"" + GenericUtilities.toCurrencyFormat(monthlySaving) +
-        "\", \"totalSaving\": \"" + GenericUtilities.toCurrencyFormat(totalSaving) +
-        "\", \"statusRate\": \"" + statusRate +
-        "\", \"revolverType\": \"" + revolverType +
-        "\", \"consolidatedDebt\": " + (consolidatedDebt ? 1 : 0) +
-        ", \"remainingTotalSavings\": \"" + GenericUtilities.toCurrencyFormat(remainingTotalSavings) +
-        "\", \"statusDebt\":" + statusDebt +
-        ", \"isSelected\":" + isSelected +
-        ", \"canBeSelected\":" + canBeSelected() +
-        "}";
   }
 
   public String toJSONString() {

@@ -670,22 +670,25 @@ public class FlexibleConsolidations {
     return "{" +
         firstname +
         email +
-        "\"offerAmount\":\"" + GenericUtilities.toCurrencyFormat(offerAmount) +
-        "\" , \"offerRate\": \"" + GenericUtilities.round(offerRate * 100) + "%" +
-        "\" , \"monthlyExternalPayment\": \"" + GenericUtilities.toCurrencyFormat(monthlyExternalPayment) +
-        "\", \"maxDebtsRate\": \"" + GenericUtilities.round(maxDebtsRate * 100) + "%" +
-        "\", \"totalSelectedDebts\":" + totalSelectedDebts +
+        "\"offerAmount\": " + GenericUtilities.round(offerAmount) +
+        ", \"offerRate\": " + offerRate +
+        ", \"monthlyExternalPayment\": " + GenericUtilities.round(monthlyExternalPayment) +
+        ", \"maxDebtsRate\":" + maxDebtsRate +
+        ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
-        ", \"totalSaving\": \"" + GenericUtilities.toCurrencyFormat(totalSaving) +
-        "\" , \"monthlySavings\": \"" + GenericUtilities.toCurrencyFormat(monthlySavings) +
-        "\" , \"totalSavingAllDebts\": \"" + GenericUtilities.toCurrencyFormat(totalSavingAllDebts) +
-        "\" , \"monthlySavingAllDebts\": \"" + GenericUtilities.toCurrencyFormat(monthlySavingAllDebts) +
-        "\" , \"totalSavingMissingDebts\": \"" + GenericUtilities.toCurrencyFormat(totalSavingMissingDebts) +
-        "\" , \"monthlySavingsMissingDebts\": \"" + GenericUtilities.toCurrencyFormat(monthlySavingsMissingDebts) +
-        "\" , \"totalAmountToConsolidate\": \"" + GenericUtilities.toCurrencyFormat(totalAmountToConsolidate) +
-        "\" , \"consolidableMissingAmount\": \"" + GenericUtilities.toCurrencyFormat(consolidableMissingAmount) +
-        "\" , \"cat\": \"" + catSimulation.getCat() + "%" +
-        "\" , \"buroDebts\":" + consolidationOffer.buroDebtsToJSONFormattedString() +
+        ", \"totalSaving\": " + GenericUtilities.round(totalSaving) +
+        ", \"monthlySavings\": " + GenericUtilities.round(monthlySavings) +
+        ", \"totalSavingAllDebts\": " + GenericUtilities.round(totalSavingAllDebts) +
+        ", \"monthlySavingAllDebts\": " + GenericUtilities.round(monthlySavingAllDebts) +
+        ", \"totalSavingMissingDebts\": " + GenericUtilities.round(totalSavingMissingDebts) +
+        ", \"monthlySavingsMissingDebts\": " + GenericUtilities.round(monthlySavingsMissingDebts) +
+        ", \"totalAmountToConsolidate\": " + GenericUtilities.round(totalAmountToConsolidate) +
+        ", \"consolidableMissingAmount\": " + GenericUtilities.round(consolidableMissingAmount) +
+        ", \"minPaymentTerm\": " + getSimulatorOffer().getMinPaymentTerm() +
+        ", \"maxPaymentTerm\": " + getSimulatorOffer().getMaxPaymentTerm() +
+        ", \"cat\": " + catSimulation.getCat() +
+        ", \"catCalculationDate\": \"" + catSimulation.getCalculationDate() +
+        "\" , \"buroDebts\":" + consolidationOffer.buroDebtsToJSONString() +
         "}";
   }
 

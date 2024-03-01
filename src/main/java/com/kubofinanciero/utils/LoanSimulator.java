@@ -14,13 +14,20 @@ public class LoanSimulator {
       put('K', new FrequencyDaysDto('K', "Catorcena", 14));
       put('S', new FrequencyDaysDto('S', "Quincena", 15));
       put('M', new FrequencyDaysDto('M', "Mes", 30));
+      put('Y', new FrequencyDaysDto('Y', "Anual", 360));
+      put('H', new FrequencyDaysDto('H', "Semestre", 180));
+      put('Q', new FrequencyDaysDto('Q', "Trimestre", 90));
+      put('B', new FrequencyDaysDto('B', "Bimestre", 60));
+      put('D', new FrequencyDaysDto('D', "Diario", 1));
+      put('V', new FrequencyDaysDto('V', "Variable", 0));
+      put('P', new FrequencyDaysDto('X', "Cada cuando recibe mi salario", 0));
     }
   };
 
   public LoanSimulator() {
   }
 
-  public final FrequencyDaysDto getFrequency(char frequency) {
+  public static FrequencyDaysDto getFrequency(char frequency) {
     FrequencyDaysDto freq = frequencyDays.get(frequency);
     if (freq == null) {
       return frequencyDays.get('M');
@@ -28,7 +35,7 @@ public class LoanSimulator {
     return freq;
   }
 
-  public double periodsPerYear(char frequency, boolean periodsForCAT) {
+  public static double periodsPerYear(char frequency, boolean periodsForCAT) {
     double periodsPerYear = getFrequency(frequency).periodsPerYear;
 
     if (periodsForCAT) {
@@ -38,20 +45,20 @@ public class LoanSimulator {
     return periodsPerYear;
   }
 
-  public double rateFrequency(double annualRate, char frequency, boolean iva) {
+  public static double rateFrequency(double annualRate, char frequency, boolean iva) {
     double ivaPercentage = iva ? 1.16 : 1;
     double frequencyNumber = periodsPerYear(frequency, false);
     return (annualRate * ivaPercentage) / frequencyNumber;
   }
 
-  public double presentValue(double rateFrequency, int totalPayments, double payment) {
+  public static double presentValue(double rateFrequency, int totalPayments, double payment) {
     return (((payment *
         ((1 - Math.pow(1 + rateFrequency, -totalPayments)) / rateFrequency)) /
         100) *
         100);
   }
 
-  public double futureValue(double payment, int totalPayments) {
+  public static double futureValue(double payment, int totalPayments) {
     return payment * totalPayments;
   }
 
@@ -60,16 +67,16 @@ public class LoanSimulator {
     return amount * commissionPercent * ivaPercentage;
   }
 
-  public double disbursement(double amount, double commissionPercent, boolean iva) {
+  public static double disbursement(double amount, double commissionPercent, boolean iva) {
     double commission = cashCommission(amount, commissionPercent, iva);
     return amount - commission;
   }
 
-  public double payment(double amount, int totalPayments, double rateFrequency) {
+  public static double payment(double amount, int totalPayments, double rateFrequency) {
     return ((rateFrequency * amount) / (1 - Math.pow(1 + rateFrequency, -totalPayments)));
   }
 
-  public int totalPayments(double amount, double payment, double rateFrequency) {
+  public static int totalPayments(double amount, double payment, double rateFrequency) {
     if (payment > 0) {
       payment = -payment;
     }
@@ -80,13 +87,13 @@ public class LoanSimulator {
     return (int) Math.ceil(totalPayments < 0 ? -1 * totalPayments : totalPayments);
   }
 
-  public double interests(double amount, double rateFrequency) {
+  public static double interests(double amount, double rateFrequency) {
     // (annualRate * ivaPercentage) / frequencyNumber
 
     return amount * rateFrequency;
   }
 
-  public List<AmortizationTableData> amortizationTable(
+  public static List<AmortizationTableData> amortizationTable(
       double amount,
       double rateFrequency,
       double payment,
@@ -138,20 +145,19 @@ public class LoanSimulator {
      * @frequency Frecuencia de pago
      */
 
-    double amount = 20000;
-    double suggestedPayment = 1500;
-    char frequency = 'M';
-    double rate = 0.593;
+    double amount = 150000;
+    double suggestedPayment = 20000;
+    char frequency = 'Y';
+    double rate = 0.0525;
     double commissionRate = 0.05;
 
     /**
      * CALCULOS DE SIMULACIÓN
      */
-    LoanSimulator loan = new LoanSimulator();
-    double ratefrequency = loan.rateFrequency(rate, frequency, true);
-    int totalPayments = loan.totalPayments(amount, suggestedPayment, ratefrequency);
-    double realPayment = loan.payment(amount, totalPayments, ratefrequency);
-    List<AmortizationTableData> amortizationTable = loan.amortizationTable(
+    double ratefrequency = LoanSimulator.rateFrequency(rate, frequency, false);
+    int totalPayments = LoanSimulator.totalPayments(amount, suggestedPayment, ratefrequency);
+    double realPayment = LoanSimulator.payment(amount, totalPayments, ratefrequency);
+    List<AmortizationTableData> amortizationTable = LoanSimulator.amortizationTable(
         amount,
         ratefrequency,
         realPayment,
@@ -160,9 +166,9 @@ public class LoanSimulator {
     /**
      * CALCULOS SIN IVA PARA EL CAT
      */
-    double commission = loan.cashCommission(amount, commissionRate, false);
-    double catFrequency = loan.rateFrequency(rate, frequency, false);
-    double catPayment = loan.payment(amount, totalPayments, catFrequency);
+    double commission = LoanSimulator.cashCommission(amount, commissionRate, false);
+    double catFrequency = LoanSimulator.rateFrequency(rate, frequency, false);
+    double catPayment = LoanSimulator.payment(amount, totalPayments, catFrequency);
     CAT cat = new CAT(
         amount,
         commission,
@@ -176,9 +182,7 @@ public class LoanSimulator {
     System.out.println("Real payment: " + realPayment);
     System.out.println("Total payments: " + totalPayments);
     System.out.println("CAT:" + cat.getCAT());
-    System.out.println("Amortization table:");
-    for (AmortizationTableData amor : amortizationTable) {
-      System.out.println(amor);
-    }
+    System.out.println("Amortization table:" + amortizationTable);
+
   }
 }

@@ -34,7 +34,7 @@ public class App {
     // .setExternalRate(0.5);
     // flexCons.updateOffer();
 
-    // System.out.println(flexCons);
-    System.out.println(flexCons.toJSONStringPdf("Juan", "juan@mail.com"));
+    System.out.println(flexCons);
+    // System.out.println(flexCons.toJSONStringPdf("Juan", "juan@mail.com"));
   }
 }
