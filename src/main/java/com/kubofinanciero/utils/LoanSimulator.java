@@ -20,7 +20,7 @@ public class LoanSimulator {
       put('B', new FrequencyDaysDto('B', "Bimestre", 60));
       put('D', new FrequencyDaysDto('D', "Diario", 1));
       put('V', new FrequencyDaysDto('V', "Variable", 0));
-      put('P', new FrequencyDaysDto('X', "Cada cuando recibe mi salario", 0));
+      put('P', new FrequencyDaysDto('P', "Cada cuando recibe mi salario", 0));
     }
   };
 
@@ -145,10 +145,10 @@ public class LoanSimulator {
      * @frequency Frecuencia de pago
      */
 
-    double amount = 150000;
-    double suggestedPayment = 20000;
+    double amount = 186600;
+    double suggestedPayment = 4000;
     char frequency = 'Y';
-    double rate = 0.0525;
+    double rate = 0.22;
     double commissionRate = 0.05;
 
     /**

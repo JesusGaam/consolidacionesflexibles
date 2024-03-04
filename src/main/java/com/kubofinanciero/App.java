@@ -15,8 +15,15 @@ public class App {
     FlexibleConsolidations flexCons = new FlexibleConsolidations(consolidationOffer);
     flexCons.initOffer();
 
-    // flexCons.getConsolidationOffer().getBuroDebts().get(2).setSelected(false);
-    // flexCons.updateOffer();
+    flexCons.setOfferRate(0.2);
+    flexCons.getConsolidationOffer().getBuroDebts().get(1)
+        .setExternalFrequency('P')
+        .setExternalRate(0.22)
+        .setAwardedPaymentTerms(14)
+        .setRemainingPaymentTerms(8)
+        .setPayment(13399.54);
+
+    flexCons.updateOffer();
 
     // flexCons.getConsolidationOffer().getBuroDebts().get(2)
     // .setSelected(true)

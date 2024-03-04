@@ -466,6 +466,15 @@ public class DebtDto {
       return;
     }
 
+    if (getExternalFrequency() == 'V' || getExternalFrequency() == 'P') {
+      this.monthlyKuboPayment = 0;
+      this.monthlySaving = 0;
+      this.totalSaving = 0;
+      this.remainingTotalSavings = 0;
+
+      return;
+    }
+
     double amount = getAmountAwarded();
     int paymentTerms = getAwardedPaymentTerms();
     int remainingPaymentTerms = getRemainingPaymentTerms();
@@ -500,6 +509,19 @@ public class DebtDto {
         return (saving / 14) * 30;
       case 'S':
         return saving * 2;
+      case 'Y':
+        return saving / 12;
+      case 'H':
+        return saving / 6;
+      case 'Q':
+        return saving / 3;
+      case 'B':
+        return saving / 2;
+      case 'D':
+        return saving * 30;
+      case 'V':
+      case 'P':
+        return 0;
       default:
         return saving;
     }
@@ -515,7 +537,7 @@ public class DebtDto {
       return;
     }
 
-    this.progress = remainingPaymentTerms / awardedPaymentTerms;
+    this.progress = (double) remainingPaymentTerms / awardedPaymentTerms;
   }
 
   public boolean editableDept() {
