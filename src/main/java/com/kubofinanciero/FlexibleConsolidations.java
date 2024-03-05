@@ -329,6 +329,7 @@ public class FlexibleConsolidations {
    * parametros de esta clase o las deudas
    */
   private void updateOffer(boolean defaultRate) {
+    this.offerStatus = STATUS_ORIGINAL_OFFER;
     calculateOfferAmount();
     calculateWeightedRate();
     calculateOfferRate(defaultRate);
