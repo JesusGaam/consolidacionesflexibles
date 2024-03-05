@@ -655,6 +655,28 @@ public class FlexibleConsolidations {
     this.consolidableMissingAmount = GenericUtilities.round(totalAmountToConsolidate - this.offerAmount);
   }
 
+  /**
+   * 
+   * @return Retorna JSON que se necesita para el email de notificación de error
+   *         de oferta
+   */
+  public String toJSONStringErrorOffer() {
+    return "{" +
+        "\"prospectusId\": " + getConsolidationOffer().getProspectusId() +
+        ", \"bursolnum\": " + getConsolidationOffer().getBursolnum() +
+        ", \"maxAmount\": \"" + GenericUtilities.toCurrencyFormat(getConsolidationOffer().getMaxAmount()) +
+        "\" , \"minPaymentTerm\":" + getConsolidationOffer().getMinPaymentTerm() +
+        ", \"maxPaymentTerm\": " + getConsolidationOffer().getMaxPaymentTerm() +
+        ", \"minPayment\": \"" + GenericUtilities.toCurrencyFormat(getConsolidationOffer().getMinPayment()) +
+        "\" , \"maxPayment\": \"" + GenericUtilities.toCurrencyFormat(getConsolidationOffer().getMaxPayment()) +
+        "\"}";
+  }
+
+  /**
+   * 
+   * @return Retorna JSON que se necesita para los endpoints de generación de
+   *         documento PDF de propuesta
+   */
   public String toJSONStringPdf(String firstname, String email) {
     if (firstname != null) {
       firstname = " \"firstname\": \"" + firstname + "\",";
@@ -693,6 +715,11 @@ public class FlexibleConsolidations {
         "}";
   }
 
+  /**
+   * 
+   * @return Retorna JSON global de FlexibleConsolidacion bajo la convensión de
+   *         vairables en inglés
+   */
   public String toJSONString() {
     return "{\"offerAmount\":" + offerAmount +
         ", \"offerRate\":" + offerRate +

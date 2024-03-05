@@ -42,6 +42,7 @@ public class App {
     // flexCons.updateOffer();
 
     System.out.println(flexCons);
+    System.out.println(flexCons.toJSONStringErrorOffer());
     // System.out.println(flexCons.toJSONStringPdf("Juan", "juan@mail.com"));
   }
 }
