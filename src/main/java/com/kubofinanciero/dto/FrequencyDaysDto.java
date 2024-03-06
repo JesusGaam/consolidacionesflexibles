@@ -11,7 +11,7 @@ public class FrequencyDaysDto {
     this.frequency = frequency;
     this.frequencyName = frequencyName;
     this.days = days;
-    this.periodsPerYear = (double) daysOfYear / days;
+    this.periodsPerYear = (double) days > 0 ? daysOfYear / days : 0;
   }
 
   public char getFrequency() {

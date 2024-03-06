@@ -1,4 +1,4 @@
-package com.kubofinanciero;
+package com.kubofinanciero.utils;
 
 import java.text.NumberFormat;
 import java.util.Calendar;
@@ -24,4 +24,13 @@ public class GenericUtilities {
         months[today.get(Calendar.MONTH)],
         today.get(Calendar.YEAR));
   }
+
+  public static double round(double number, int nDigits) {
+    nDigits = nDigits > 0 ? (int) Math.pow(10, nDigits) : 1;
+    return (double) Math.round(number * nDigits) / nDigits;
+  };
+
+  public static double round(double number) {
+    return round(number, 2);
+  };
 }

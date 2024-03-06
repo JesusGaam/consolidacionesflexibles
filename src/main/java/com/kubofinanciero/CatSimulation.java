@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.kubofinanciero.dto.SimulatorOfferDto;
 import com.kubofinanciero.utils.CAT;
+import com.kubofinanciero.utils.GenericUtilities;
 import com.kubofinanciero.utils.LoanSimulator;
 
 public class CatSimulation {
@@ -16,7 +17,6 @@ public class CatSimulation {
   private char frequency;
   private double cat;
   private String calculationDate;
-  private LoanSimulator loan = new LoanSimulator();
   private SimulatorOfferDto simulatorOffer;
   private double ratefrequency;
 
@@ -35,7 +35,7 @@ public class CatSimulation {
     this.commissionRate = simulatorOffer.getCommissionRate();
     this.suggestedPayment = suggestedPayment;
     this.frequency = frequency;
-    ratefrequency = loan.rateFrequency(rate, frequency, true);
+    ratefrequency = LoanSimulator.rateFrequency(rate, frequency, true);
 
     getCalculationDate();
     validateSuggestedPayment();
@@ -103,7 +103,7 @@ public class CatSimulation {
       return;
     }
 
-    paymentTerm = loan.totalPayments(amount, suggestedPayment, ratefrequency);
+    paymentTerm = LoanSimulator.totalPayments(amount, suggestedPayment, ratefrequency);
     validatePaymentTerm();
   }
 
@@ -124,19 +124,19 @@ public class CatSimulation {
       return;
     }
 
-    double payment = loan.payment(amount, paymentTerm, ratefrequency);
+    double payment = LoanSimulator.payment(amount, paymentTerm, ratefrequency);
 
     while (payment > simulatorOffer.getMaxPayment() && paymentTerm < simulatorOffer.getMaxPaymentTerm()) {
       this.paymentTerm = paymentTerm + 1;
-      payment = loan.payment(amount, paymentTerm, ratefrequency);
+      payment = LoanSimulator.payment(amount, paymentTerm, ratefrequency);
     }
 
     while (payment < simulatorOffer.getMinPayment() && paymentTerm > simulatorOffer.getMinPaymentTerm()) {
       this.paymentTerm = paymentTerm - 1;
-      payment = loan.payment(amount, paymentTerm, ratefrequency);
+      payment = LoanSimulator.payment(amount, paymentTerm, ratefrequency);
     }
 
-    this.payment = LoanSimulator.round(payment);
+    this.payment = GenericUtilities.round(payment);
   }
 
   private void findCat() {
@@ -149,12 +149,12 @@ public class CatSimulation {
     }
 
     double cashCommission = LoanSimulator.cashCommission(amount, commissionRate, false);
-    double ratefrequency = loan.rateFrequency(rate, frequency, false);
-    double paymentCat = loan.payment(amount, paymentTerm, ratefrequency);
-    int periodsPerYear = loan.getFrequency(frequency).getPeriodsPerYearForCat();
+    double ratefrequency = LoanSimulator.rateFrequency(rate, frequency, false);
+    double paymentCat = LoanSimulator.payment(amount, paymentTerm, ratefrequency);
+    int periodsPerYear = LoanSimulator.getFrequency(frequency).getPeriodsPerYearForCat();
 
     double fullCat = new CAT(amount, cashCommission, paymentCat, paymentTerm, periodsPerYear).getCAT();
-    cat = LoanSimulator.round(fullCat, 1);
+    cat = GenericUtilities.round(fullCat, 1);
   }
 
   @Override
@@ -167,7 +167,7 @@ public class CatSimulation {
         ", \"frequency\": \"" + frequency +
         "\", \"cat\":" + cat +
         ", \"calculationDate\": \"" + calculationDate +
-        "}";
+        "\"}";
   }
 
   public static void main(String[] args) {

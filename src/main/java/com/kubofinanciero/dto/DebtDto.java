@@ -2,6 +2,7 @@ package com.kubofinanciero.dto;
 
 import java.util.HashMap;
 
+import com.kubofinanciero.utils.GenericUtilities;
 import com.kubofinanciero.utils.LoanSimulator;
 
 public class DebtDto {
@@ -465,7 +466,15 @@ public class DebtDto {
       return;
     }
 
-    LoanSimulator ls = new LoanSimulator();
+    if (getExternalFrequency() == 'V' || getExternalFrequency() == 'P') {
+      this.monthlyKuboPayment = 0;
+      this.monthlySaving = 0;
+      this.totalSaving = 0;
+      this.remainingTotalSavings = 0;
+
+      return;
+    }
+
     double amount = getAmountAwarded();
     int paymentTerms = getAwardedPaymentTerms();
     int remainingPaymentTerms = getRemainingPaymentTerms();
@@ -478,12 +487,12 @@ public class DebtDto {
       remainingPaymentTerms = getRevolverPaymentTerm();
       externalFrequency = REVOLVER_FREQUENCY;
 
-      double rate = ls.rateFrequency(getExternalRate(), externalFrequency, true);
-      payment = ls.payment(amount, paymentTerms, rate);
+      double rate = LoanSimulator.rateFrequency(getExternalRate(), externalFrequency, true);
+      payment = LoanSimulator.payment(amount, paymentTerms, rate);
     }
 
-    double rate = ls.rateFrequency(kuboRate, externalFrequency, true);
-    double kuboPayment = ls.payment(amount, paymentTerms, rate);
+    double rate = LoanSimulator.rateFrequency(kuboRate, externalFrequency, true);
+    double kuboPayment = LoanSimulator.payment(amount, paymentTerms, rate);
     double saving = payment > kuboPayment ? payment - kuboPayment : 0;
 
     this.monthlyKuboPayment = convertToMonthlyPayment(kuboPayment);
@@ -500,6 +509,19 @@ public class DebtDto {
         return (saving / 14) * 30;
       case 'S':
         return saving * 2;
+      case 'Y':
+        return saving / 12;
+      case 'H':
+        return saving / 6;
+      case 'Q':
+        return saving / 3;
+      case 'B':
+        return saving / 2;
+      case 'D':
+        return saving * 30;
+      case 'V':
+      case 'P':
+        return 0;
       default:
         return saving;
     }
@@ -515,7 +537,7 @@ public class DebtDto {
       return;
     }
 
-    this.progress = remainingPaymentTerms / awardedPaymentTerms;
+    this.progress = (double) remainingPaymentTerms / awardedPaymentTerms;
   }
 
   public boolean editableDept() {
@@ -544,10 +566,10 @@ public class DebtDto {
 
     return "{\"registry\":" + registry +
         ", \"financialEntity\":\"" + financialEntity +
-        "\", \"amountAwarded\":" + LoanSimulator.round(amountAwarded, 2) +
-        ", \"payment\":" + LoanSimulator.round(payment, 2) +
-        ", \"monthlyKuboPayment\":" + LoanSimulator.round(monthlyKuboPayment, 2) +
-        ", \"balance\":" + LoanSimulator.round(balance, 2) +
+        "\", \"amountAwarded\":" + GenericUtilities.round(amountAwarded) +
+        ", \"payment\":" + GenericUtilities.round(payment) +
+        ", \"monthlyKuboPayment\":" + GenericUtilities.round(monthlyKuboPayment) +
+        ", \"balance\":" + GenericUtilities.round(balance) +
         ", \"externalRate\":" + externalRate +
         ", \"kuboRate\":" + kuboRate +
         ", \"awardedPaymentTerms\":" + awardedPaymentTerms +
@@ -557,12 +579,12 @@ public class DebtDto {
         ", \"startDate\":\"" + startDate +
         "\", \"typeDebt\": \"" + typeDebt +
         "\", \"typeDebtName\": \"" + typeDebtName +
-        "\", \"monthlySaving\":" + LoanSimulator.round(monthlySaving, 2) +
-        ", \"totalSaving\":" + LoanSimulator.round(totalSaving, 2) +
+        "\", \"monthlySaving\":" + GenericUtilities.round(monthlySaving) +
+        ", \"totalSaving\":" + GenericUtilities.round(totalSaving) +
         ", \"statusRate\":\"" + statusRate +
         "\", \"revolverType\":\"" + revolverType +
         "\", \"consolidatedDebt\": " + (consolidatedDebt ? 1 : 0) +
-        ", \"remainingTotalSavings\":" + LoanSimulator.round(remainingTotalSavings, 2) +
+        ", \"remainingTotalSavings\":" + GenericUtilities.round(remainingTotalSavings) +
         ", \"statusDebt\":" + statusDebt +
         ", \"isSelected\":" + isSelected +
         ", \"canBeSelected\":" + canBeSelected() +
