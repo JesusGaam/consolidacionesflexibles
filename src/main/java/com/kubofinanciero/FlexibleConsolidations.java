@@ -588,6 +588,14 @@ public class FlexibleConsolidations {
 
     for (DebtDto debt : consolidationOffer.getBuroDebts()) {
 
+      if (!debt.getConsolidatedDebt()) {
+        continue;
+      }
+
+      if (debt.getTypeDebt() == 'R' && !debt.canBeSelected()) {
+        continue;
+      }
+
       if (debt.getTotalSaving() > 0) {
         totalSavingAllDebts += debt.getTotalSaving();
 
@@ -653,6 +661,34 @@ public class FlexibleConsolidations {
     this.monthlyKuboPayment = monthlyKuboPayment;
     this.totalAmountToConsolidate = GenericUtilities.round(totalAmountToConsolidate);
     this.consolidableMissingAmount = GenericUtilities.round(totalAmountToConsolidate - this.offerAmount);
+  }
+
+  private int calculateAvgPaymentTerm() {
+    int nPaymentTerm = 0;
+    int avgPaymentTerm = 0;
+    int minPaymentTerm = getConsolidationOffer().getMinPaymentTerm();
+    int maxPaymentTerm = getConsolidationOffer().getMaxPaymentTerm();
+
+    for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
+      if (debt.canBeSelected() && debt.getTypeDebt() == 'I') {
+        nPaymentTerm++;
+        avgPaymentTerm += debt.getMonthlyPaymentTerm();
+      }
+    }
+
+    if (avgPaymentTerm == 0 || nPaymentTerm == 0) {
+      return 0;
+    }
+
+    avgPaymentTerm = (int) Math.ceil(avgPaymentTerm / nPaymentTerm);
+
+    if (avgPaymentTerm > maxPaymentTerm) {
+      avgPaymentTerm = maxPaymentTerm;
+    } else if (avgPaymentTerm < minPaymentTerm) {
+      avgPaymentTerm = minPaymentTerm;
+    }
+
+    return avgPaymentTerm;
   }
 
   /**

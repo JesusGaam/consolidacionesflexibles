@@ -142,6 +142,7 @@ public class CatSimulation {
   private void findCat() {
     if (amount <= 0 || paymentTerm <= 0) {
       cat = 0;
+      return;
     }
 
     if (commissionRate <= 0) {

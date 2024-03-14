@@ -74,6 +74,8 @@ public class ConsolidationOfferDto {
     this.prospectusId = prospectusId;
     this.bursolnum = bursolnum;
     this.maxClientAmount = maxClientAmount;
+
+    addPaymentTermToBuroDebts();
   }
 
   public String getLoanType() {
@@ -201,11 +203,15 @@ public class ConsolidationOfferDto {
 
   public ConsolidationOfferDto setMinPaymentTerm(int minPaymentTerm) {
     this.minPaymentTerm = minPaymentTerm;
+
+    addPaymentTermToBuroDebts();
     return this;
   }
 
   public ConsolidationOfferDto setMaxPaymentTerm(int maxPaymentTerm) {
     this.maxPaymentTerm = maxPaymentTerm;
+
+    addPaymentTermToBuroDebts();
     return this;
   }
 
@@ -287,6 +293,13 @@ public class ConsolidationOfferDto {
       buroDebts += this.buroDebts.get(i).toJSONString() + ",";
     }
     return ("[" + buroDebts + "]").replace(",]", "]");
+  }
+
+  private void addPaymentTermToBuroDebts() {
+    for (DebtDto debt : getBuroDebts()) {
+      debt.setMinPaymentTerm(getMinPaymentTerm())
+          .setMaxPaymentTerm(getMaxPaymentTerm());
+    }
   }
 
   public String toJSONString() {
