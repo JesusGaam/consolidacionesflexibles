@@ -5,23 +5,40 @@ import com.kubofinanciero.utils.JsonAdapter;
 
 public class App {
   public static void main(String[] args) {
-    String jsonOffer = "{\"Prospecto\": 673131, \"monto_maximo_cliente\": 500000.0, \"cuota_externa_total\": 49972.0, \"capacidad_maxima_pago\": 939723.0, \"bursolnum\": 7262204, \"Oferta Automatico\": [{\"loan_type\": \"CON\", \"sub_loan_type\": \"CONSOLIDACION_FLEXIBLE\" , \"cuota_max\": 31287.480213814375, \"monto_max\": 500000.0, \"cuota_min\": 308.7596227438041, \"monto_min\": 5000, \"plazo_max\": 54.0, \"plazo_min\": 4, \"tasa\": 0.6193, \"comision\": 0.0, \"proba\": 0, \"segmento\": 26, \"frecuencia\": [\"M\", \"S\", \"K\", \"W\"] , \"tasa_asistida\": [0.6193, 0.5991, 0.5668, 0.5504, 0.5486, 0.5391, 0.5292, 0.4818, 0.4706, 0.4582, 0.4428, 0.4295, 0.3813, 0.3617, 0.3337, 0.2914, 0.2622, 0.2306, 0.2], \"comisiones\": [0, 0.0481, 0.0481, 0.0481, 0.0476, 0.0471, 0.0466, 0.046, 0.0455, 0.0449, 0.0444, 0.0439, 0.0433, 0.0428, 0.0423, 0.0417, 0.03845, 0.03845, 0.03845], \"deudas_buro\": [ {\"entidad\": \"BANCO\", \"registro\":2, \"monto_otorgado\":85000.0, \"cuota\":4250.0, \"saldo\":68898.0, \"tasa_externa\":-1.0, \"tasa_kubo\":0.0062, \"numero_pagos_otorgado\":-1.0, \"numero_pagos_restante\":-1.0, \"frecuencia_externa\":\"Z\", \"avance\":0.1894, \"fecha_inicio\":\"2021-11-08\", \"tipo_deuda\":\"R\", \"ahorro_cuota_mensual\":18968.519786185625, \"ahorro_total\":1024300.0684540238, \"estatus_tasa\":\"Desbordamiento numérico\", \"tipo_revolvencia\":\"Light Revolver\", \"deuda_consolidable\":1}, {\"entidad\": \"COMUNICACIONES\", \"registro\":5, \"monto_otorgado\":2000.0, \"cuota\":0.0, \"saldo\":0.0, \"tasa_externa\":-1.0, \"tasa_kubo\":0.0062, \"numero_pagos_otorgado\":-1.0, \"numero_pagos_restante\":-1.0, \"frecuencia_externa\":\"M\", \"avance\":1.0, \"fecha_inicio\":\"2005-12-12\", \"tipo_deuda\":\"O\", \"ahorro_cuota_mensual\":18968.519786185625, \"ahorro_total\":1024300.0684540238, \"estatus_tasa\":\"Falta Pago_periodico\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":0}, {\"entidad\": \"CIA Q' OTORGA\", \"registro\":3, \"monto_otorgado\":443416.0, \"cuota\":0.0, \"saldo\":307831.0, \"tasa_externa\":-1.0, \"tasa_kubo\":0.0062, \"numero_pagos_otorgado\":-1.0, \"numero_pagos_restante\":-1.0, \"frecuencia_externa\":\"M\", \"avance\":0.3058, \"fecha_inicio\":\"2004-07-01\", \"tipo_deuda\":\"O\", \"ahorro_cuota_mensual\":18968.519786185625, \"ahorro_total\":1024300.0684540238, \"estatus_tasa\":\"Falta Pago_periodico\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":0}, {\"entidad\": \"CIA Q' OTORGA\", \"registro\":1, \"monto_otorgado\":47000.0, \"cuota\":650, \"saldo\":31010.0, \"tasa_externa\":-1.0, \"tasa_kubo\":0.0062, \"numero_pagos_otorgado\":-1.0, \"numero_pagos_restante\":-1.0, \"frecuencia_externa\":\"Z\", \"avance\":0.3402, \"fecha_inicio\":\"2007-01-13\", \"tipo_deuda\":\"R\", \"ahorro_cuota_mensual\":18968.519786185625, \"ahorro_total\":1024300.0684540238, \"estatus_tasa\":\"Falta Pago_periodico\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":0}, {\"entidad\": \"KUBO FINANCIERO\", \"registro\":8, \"monto_otorgado\":116890.0, \"cuota\":5735.0, \"saldo\":104580.0, \"tasa_externa\":0.5561, \"tasa_kubo\":0.0062, \"numero_pagos_otorgado\":60.0, \"numero_pagos_restante\":37.0, \"frecuencia_externa\":\"M\", \"avance\":0.1053, \"fecha_inicio\":\"2022-03-23\", \"tipo_deuda\":\"I\", \"ahorro_cuota_mensual\":18968.519786185625, \"ahorro_total\":1024300.0684540238, \"estatus_tasa\":\"Calculable\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":0}, {\"entidad\": \"BANCO\", \"registro\":7, \"monto_otorgado\":122650.0, \"cuota\":6132.0, \"saldo\":112776.0, \"tasa_externa\":-1.0, \"tasa_kubo\":0.0062, \"numero_pagos_otorgado\":-1.0, \"numero_pagos_restante\":-1.0, \"frecuencia_externa\":\"Z\", \"avance\":0.0805, \"fecha_inicio\":\"2006-01-26\", \"tipo_deuda\":\"R\", \"ahorro_cuota_mensual\":18968.519786185625, \"ahorro_total\":1024300.0684540238, \"estatus_tasa\":\"Desbordamiento numérico\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":1}, {\"entidad\": \"BANCO\", \"registro\":6, \"monto_otorgado\":36900.0, \"cuota\":1845.0, \"saldo\":14242.0, \"tasa_externa\":-1.0, \"tasa_kubo\":0.0062, \"numero_pagos_otorgado\":-1.0, \"numero_pagos_restante\":-1.0, \"frecuencia_externa\":\"Z\", \"avance\":0.614, \"fecha_inicio\":\"1997-10-08\", \"tipo_deuda\":\"R\", \"ahorro_cuota_mensual\":18968.519786185625, \"ahorro_total\":1024300.0684540238, \"estatus_tasa\":\"Desbordamiento numérico\", \"tipo_revolvencia\":\"Light Revolver\", \"deuda_consolidable\":1}, {\"entidad\": \"BANCO\", \"registro\":4, \"monto_otorgado\":613600.0, \"cuota\":36184.0, \"saldo\":512510.0, \"tasa_externa\":0.6928, \"tasa_kubo\":0.0062, \"numero_pagos_otorgado\":120.0, \"numero_pagos_restante\":41.0, \"frecuencia_externa\":\"S\", \"avance\":0.1647, \"fecha_inicio\":\"2022-08-15\", \"tipo_deuda\":\"I\", \"ahorro_cuota_mensual\":18968.519786185625, \"ahorro_total\":1024300.0684540238, \"estatus_tasa\":\"Calculable\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":1}, {\"entidad\": \"BANCO\", \"registro\":9, \"monto_otorgado\":36900.0, \"cuota\":1845.0, \"saldo\":14529.0, \"tasa_externa\":-1.0, \"tasa_kubo\":0.0062, \"numero_pagos_otorgado\":-1.0, \"numero_pagos_restante\":-1.0, \"frecuencia_externa\":\"Z\", \"avance\":0.6063, \"fecha_inicio\":\"1997-10-08\", \"tipo_deuda\":\"R\", \"ahorro_cuota_mensual\":18968.519786185625, \"ahorro_total\":1024300.0684540238, \"estatus_tasa\":\"Desbordamiento numérico\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":1}]}]}\n"
+    String jsonOffer = "{\"Prospecto\": 4539704, \"monto_maximo_cliente\": 419195.0, \"cuota_externa_total\": 21247.0, \"capacidad_maxima_pago\": 416988.0, \"bursolnum\": 7355231, \"Oferta Automatico\": [{\"loan_type\": \"CON\", \"sub_loan_type\": \"CONSOLIDACION_FLEXIBLE\" , \"cuota_max\": 18386.536241682767, \"monto_max\": 419195.0, \"cuota_min\": 173.6361078775173, \"monto_min\": 5000, \"plazo_max\": 37.0, \"plazo_min\": 4, \"tasa\": 0.5292, \"comision\": 0.0417, \"proba\": 0, \"segmento\": 26, \"tipo_flujo\": \"Tradicional\", \"comprobante_tasa\": 1, \"comprobante_ingresos\": 1, \"frecuencia\": [\"M\", \"S\", \"K\", \"W\"] , \"tasa_asistida\": [0.2914, 0.2622, 0.2306, 0.2], \"comisiones\": [0.0417, 0.03845, 0.03845, 0.03845], \"deudas_buro\": [ {\"entidad\": \"KUBO FINANCIERO\", \"registro\":5, \"monto_otorgado\":10000.0, \"cuota\":1419.0, \"saldo\":10205.0, \"tasa_externa\":0.6318, \"tasa_kubo\":0.5292, \"numero_pagos_otorgado\":9.0, \"numero_pagos_restante\":7.0, \"frecuencia_externa\":\"M\", \"avance\":-0.0205, \"fecha_inicio\":\"2024-01-17\", \"tipo_deuda\":\"I\", \"ahorro_cuota_mensual\":811.5364193138869, \"ahorro_total\":30026.847514613815, \"estatus_tasa\":\"Calculable\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":0}, {\"entidad\": \"SERVICIOS\", \"registro\":7, \"monto_otorgado\":0.0, \"cuota\":0.0, \"saldo\":0.0, \"tasa_externa\":-1.0, \"tasa_kubo\":0.5292, \"numero_pagos_otorgado\":0.0, \"numero_pagos_restante\":6.0, \"frecuencia_externa\":\"B\", \"avance\":-1.0, \"fecha_inicio\":\"2017-12-19\", \"tipo_deuda\":\"O\", \"ahorro_cuota_mensual\":0.0, \"ahorro_total\":0.0, \"estatus_tasa\":\"No calculable\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":0}, {\"entidad\": \"SERVICIOS\", \"registro\":4, \"monto_otorgado\":0.0, \"cuota\":0.0, \"saldo\":0.0, \"tasa_externa\":-1.0, \"tasa_kubo\":0.5292, \"numero_pagos_otorgado\":-1.0, \"numero_pagos_restante\":-1.0, \"frecuencia_externa\":\"Z\", \"avance\":-1.0, \"fecha_inicio\":\"2022-08-05\", \"tipo_deuda\":\"O\", \"ahorro_cuota_mensual\":0.0, \"ahorro_total\":0.0, \"estatus_tasa\":\"No calculable\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":0}, {\"entidad\": \"BANCO\", \"registro\":6, \"monto_otorgado\":60000.0, \"cuota\":3932.0, \"saldo\":60079.0, \"tasa_externa\":0.7549, \"tasa_kubo\":0.5292, \"numero_pagos_otorgado\":96.0, \"numero_pagos_restante\":46.0, \"frecuencia_externa\":\"S\", \"avance\":-0.0013, \"fecha_inicio\":\"2024-01-29\", \"tipo_deuda\":\"I\", \"ahorro_cuota_mensual\":287.21851588332083, \"ahorro_total\":10627.08508768287, \"estatus_tasa\":\"Calculable\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":1}, {\"entidad\": \"BANCO\", \"registro\":3, \"monto_otorgado\":200000.0, \"cuota\":12452.0, \"saldo\":191745.0, \"tasa_externa\":-1.0, \"tasa_kubo\":0.5292, \"numero_pagos_otorgado\":5.0, \"numero_pagos_restante\":6.0, \"frecuencia_externa\":\"S\", \"avance\":0.0413, \"fecha_inicio\":\"2023-11-06\", \"tipo_deuda\":\"I\", \"ahorro_cuota_mensual\":302.7283862777367, \"ahorro_total\":11200.950292276259, \"estatus_tasa\":\"No calculable\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":1}, {\"entidad\": \"BANCO\", \"registro\":2, \"monto_otorgado\":140988.0, \"cuota\":2938.0, \"saldo\":69517.0, \"tasa_externa\":0.0001, \"tasa_kubo\":0.5292, \"numero_pagos_otorgado\":96.0, \"numero_pagos_restante\":44.0, \"frecuencia_externa\":\"S\", \"avance\":0.5069, \"fecha_inicio\":\"2023-11-18\", \"tipo_deuda\":\"I\", \"ahorro_cuota_mensual\":-5626.507531377372, \"ahorro_total\":-208180.77866096277, \"estatus_tasa\":\"Calculable\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":1}, {\"entidad\": \"BANCO\", \"registro\":1, \"monto_otorgado\":18207.0, \"cuota\":506.0, \"saldo\":9354.0, \"tasa_externa\":0.0003, \"tasa_kubo\":0.5292, \"numero_pagos_otorgado\":72.0, \"numero_pagos_restante\":27.0, \"frecuencia_externa\":\"S\", \"avance\":0.4862, \"fecha_inicio\":\"2023-06-26\", \"tipo_deuda\":\"I\", \"ahorro_cuota_mensual\":-600.0089413552062, \"ahorro_total\":-22200.33083014263, \"estatus_tasa\":\"Calculable\", \"tipo_revolvencia\":\"High Revolver\", \"deuda_consolidable\":1}]}]}\n"
         + //
         "";
 
     ConsolidationOfferDto consolidationOffer = JsonAdapter.jsonToConsolidationOffer(jsonOffer);
-
-    // System.out.println(consolidationOffer);
     FlexibleConsolidations flexCons = new FlexibleConsolidations(consolidationOffer);
     flexCons.initOffer();
 
-    flexCons.getConsolidationOffer().getBuroDebts().get(0)
-        .setExternalRate(0.60)
-        .setSelected(true);
+    // flexCons.getConsolidationOffer().getBuroDebts().get(2)
+    // .setExternalRate(0.30)
+    // .setSelected(true);
+    // flexCons.updateOffer();
 
-    flexCons.getConsolidationOffer().getBuroDebts().get(7)
-        .setSelected(false);
-    flexCons.updateOffer();
+    // CAMBIOS PARA PROSPECTO 2842882: OFERTA SIN AHORROS NI MONTO RESTANTE
+    // flexCons.getConsolidationOffer().getBuroDebts().get(2)
+    // .setExternalRate(0.30)
+    // .setSelected(true);
+    // flexCons.updateOffer();
+    // FIN CAMBIOS PARA PROSPECTO 2842882: OFERTA SIN AHORROS NI MONTO RESTANTE
+
+    // CAMBIOS PARA PROSPECTO 1051311
+    // flexCons.getConsolidationOffer().getBuroDebts().get(1)
+    // .setExternalRate(0.60)
+    // .setSelected(true);
+
+    // flexCons.getConsolidationOffer().getBuroDebts().get(5)
+    // .setExternalRate(0.50)
+    // .setSelected(true);
+    // flexCons.updateOffer();
+    // FIN CAMBIOS PARA PROSPECTO 1051311
+
+    // flexCons.getConsolidationOffer().getBuroDebts().get(7)
+    // .setSelected(false);
+    // flexCons.updateOffer();
 
     // flexCons.updateOffer();
 
@@ -42,7 +59,8 @@ public class App {
     // flexCons.updateOffer();
 
     System.out.println(flexCons);
-    System.out.println(flexCons.toJSONStringErrorOffer());
-    // System.out.println(flexCons.toJSONStringPdf("Juan", "juan@mail.com"));
+    // System.out.println(flexCons.toJSONStringErrorOffer());
+    // System.out.println(flexCons.toJSONStringPdf("Juan",
+    // "jesus.garcia@gmail.com"));
   }
 }

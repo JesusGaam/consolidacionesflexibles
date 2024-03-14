@@ -50,6 +50,9 @@ public class DebtDto {
   private int statusDebt;
   private boolean isSelected;
 
+  private int minPaymentTerm;
+  private int maxPaymentTerm;
+
   public DebtDto(
       long registry,
       String financialEntity,
@@ -155,6 +158,10 @@ public class DebtDto {
   }
 
   public char getExternalFrequency() {
+    if (this.getTypeDebt() == 'R') {
+      return REVOLVER_FREQUENCY;
+    }
+
     return externalFrequency;
   }
 
@@ -212,8 +219,12 @@ public class DebtDto {
     return isSelected;
   }
 
-  private int getRevolverPaymentTerm() {
-    return 12;
+  public int getMinPaymentTerm() {
+    return minPaymentTerm;
+  }
+
+  public int getMaxPaymentTerm() {
+    return maxPaymentTerm;
   }
 
   /*
@@ -265,6 +276,9 @@ public class DebtDto {
       this.statusDebt = STATUS_UPDATED_DEBT;
     }
     this.balance = balance;
+    validateStatusRate();
+    calculateSavings();
+
     return this;
   }
 
@@ -421,6 +435,16 @@ public class DebtDto {
     return this;
   }
 
+  public DebtDto setMinPaymentTerm(int minPaymentTerm) {
+    this.minPaymentTerm = minPaymentTerm;
+    return this;
+  }
+
+  public DebtDto setMaxPaymentTerm(int maxPaymentTerm) {
+    this.maxPaymentTerm = maxPaymentTerm;
+    return this;
+  }
+
   public boolean canBeSelected() {
     return this.consolidatedDebt && statusRate.equals("Calculable");
   }
@@ -476,29 +500,43 @@ public class DebtDto {
     }
 
     double amount = getAmountAwarded();
-    int paymentTerms = getAwardedPaymentTerms();
-    int remainingPaymentTerms = getRemainingPaymentTerms();
-    char externalFrequency = getExternalFrequency();
-    double payment = getPayment();
-
     if (this.typeDebt == 'R') {
       amount = getBalance();
-      paymentTerms = getRevolverPaymentTerm();
-      remainingPaymentTerms = getRevolverPaymentTerm();
-      externalFrequency = REVOLVER_FREQUENCY;
+      calculateRevolverPaymentTerms();
 
-      double rate = LoanSimulator.rateFrequency(getExternalRate(), externalFrequency, true);
-      payment = LoanSimulator.payment(amount, paymentTerms, rate);
     }
 
-    double rate = LoanSimulator.rateFrequency(kuboRate, externalFrequency, true);
-    double kuboPayment = LoanSimulator.payment(amount, paymentTerms, rate);
-    double saving = payment > kuboPayment ? payment - kuboPayment : 0;
+    double rate = LoanSimulator.rateFrequency(kuboRate, getExternalFrequency(), true);
+    double kuboPayment = LoanSimulator.payment(amount, getAwardedPaymentTerms(), rate);
+    double saving = getPayment() > kuboPayment ? getPayment() - kuboPayment : 0;
 
     this.monthlyKuboPayment = convertToMonthlyPayment(kuboPayment);
     this.monthlySaving = convertToMonthlyPayment(saving);
-    this.totalSaving = saving * paymentTerms;
-    this.remainingTotalSavings = saving * remainingPaymentTerms;
+    this.totalSaving = saving * getAwardedPaymentTerms();
+    this.remainingTotalSavings = saving * getRemainingPaymentTerms();
+  }
+
+  private void calculateRevolverPaymentTerms() {
+
+    if (getBalance() <= 0 || getPayment() <= 0 || getExternalRate() <= 0) {
+      return;
+    }
+
+    double payment = 0;
+    double rate = LoanSimulator.rateFrequency(getExternalRate(), getExternalFrequency(), true);
+    int paymentTerms = LoanSimulator.totalPayments(getBalance(), getPayment(), rate);
+
+    if (paymentTerms > getMaxPaymentTerm()) {
+      paymentTerms = getMaxPaymentTerm();
+    } else if (paymentTerms < getMinPaymentTerm()) {
+      paymentTerms = getMinPaymentTerm();
+    }
+    payment = LoanSimulator.payment(getBalance(), paymentTerms, rate);
+
+    this.awardedPaymentTerms = paymentTerms;
+    this.remainingPaymentTerms = paymentTerms;
+    this.payment = payment;
+
   }
 
   private double convertToMonthlyPayment(double saving) {
@@ -527,6 +565,32 @@ public class DebtDto {
     }
   }
 
+  public int getMonthlyPaymentTerm() {
+
+    switch (this.externalFrequency) {
+      case 'W':
+        return (int) Math.ceil(getAwardedPaymentTerms() / 4);
+      case 'K':
+      case 'S':
+        return (int) Math.ceil(getAwardedPaymentTerms() / 2);
+      case 'Y':
+        return getAwardedPaymentTerms() * 12;
+      case 'H':
+        return getAwardedPaymentTerms() * 6;
+      case 'Q':
+        return getAwardedPaymentTerms() * 3;
+      case 'B':
+        return getAwardedPaymentTerms() * 2;
+      case 'D':
+        return (int) Math.ceil(getAwardedPaymentTerms() / 30);
+      case 'V':
+      case 'P':
+        return 0;
+      default:
+        return getAwardedPaymentTerms();
+    }
+  }
+
   /**
    * Calcula el avance de la deuda externa, toma en cuenta el plazo total y el
    * numero de pagos realizados
@@ -550,11 +614,14 @@ public class DebtDto {
 
   private void validateStatusRate() {
     double amount = getAmountAwarded();
-    double paymentTerm = getAwardedPaymentTerms();
+    int paymentTerm = getAwardedPaymentTerms();
 
     if (this.typeDebt == 'R') {
       amount = getBalance();
-      paymentTerm = getRevolverPaymentTerm();
+
+      if (paymentTerm <= 0) {
+        paymentTerm = getMaxPaymentTerm();
+      }
     }
 
     if (externalRate > 0 && payment > 0 && amount > 0 && paymentTerm > 0) {
