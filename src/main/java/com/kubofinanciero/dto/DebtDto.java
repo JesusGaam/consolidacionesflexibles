@@ -630,6 +630,11 @@ public class DebtDto {
   }
 
   public String toJSONString() {
+    boolean showRevolverSaving = true;
+
+    if (getTypeDebt() == 'R') {
+      showRevolverSaving = canBeSelected();
+    }
 
     return "{\"registry\":" + registry +
         ", \"financialEntity\":\"" + financialEntity +
@@ -646,8 +651,8 @@ public class DebtDto {
         ", \"startDate\":\"" + startDate +
         "\", \"typeDebt\": \"" + typeDebt +
         "\", \"typeDebtName\": \"" + typeDebtName +
-        "\", \"monthlySaving\":" + GenericUtilities.round(monthlySaving) +
-        ", \"totalSaving\":" + GenericUtilities.round(totalSaving) +
+        "\", \"monthlySaving\":" + (showRevolverSaving ? GenericUtilities.round(monthlySaving) : -1) +
+        ", \"totalSaving\":" + (showRevolverSaving ? GenericUtilities.round(totalSaving) : -1) +
         ", \"statusRate\":\"" + statusRate +
         "\", \"revolverType\":\"" + revolverType +
         "\", \"consolidatedDebt\": " + (consolidatedDebt ? 1 : 0) +
