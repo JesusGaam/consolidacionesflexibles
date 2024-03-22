@@ -254,11 +254,11 @@ public class DebtDto {
 
     if (this.payment != payment) {
       this.statusDebt = STATUS_UPDATED_DEBT;
-    }
 
-    this.payment = payment;
-    validateStatusRate();
-    calculateSavings();
+      this.payment = payment;
+      validateStatusRate();
+      calculateSavings();
+    }
 
     return this;
   }
@@ -274,10 +274,11 @@ public class DebtDto {
 
     if (this.balance != balance) {
       this.statusDebt = STATUS_UPDATED_DEBT;
+
+      this.balance = balance;
+      validateStatusRate();
+      calculateSavings();
     }
-    this.balance = balance;
-    validateStatusRate();
-    calculateSavings();
 
     return this;
   }
@@ -293,11 +294,11 @@ public class DebtDto {
 
     if (this.amountAwarded != amountAwarded) {
       this.statusDebt = STATUS_UPDATED_DEBT;
-    }
 
-    this.amountAwarded = amountAwarded;
-    validateStatusRate();
-    calculateSavings();
+      this.amountAwarded = amountAwarded;
+      validateStatusRate();
+      calculateSavings();
+    }
 
     return this;
   }
@@ -314,11 +315,11 @@ public class DebtDto {
 
     if (this.externalRate != externalRate) {
       this.statusDebt = STATUS_UPDATED_DEBT;
-    }
 
-    this.externalRate = externalRate;
-    validateStatusRate();
-    calculateSavings();
+      this.externalRate = externalRate;
+      validateStatusRate();
+      calculateSavings();
+    }
 
     return this;
   }
@@ -333,8 +334,10 @@ public class DebtDto {
       return this;
     }
 
-    this.kuboRate = kuboRate;
-    calculateSavings();
+    if (this.kuboRate != kuboRate) {
+      this.kuboRate = kuboRate;
+      calculateSavings();
+    }
 
     return this;
   }
@@ -352,12 +355,12 @@ public class DebtDto {
 
     if (this.awardedPaymentTerms != awardedPaymentTerms) {
       this.statusDebt = STATUS_UPDATED_DEBT;
-    }
 
-    this.awardedPaymentTerms = awardedPaymentTerms;
-    validateStatusRate();
-    calculateSavings();
-    calculateProgress();
+      this.awardedPaymentTerms = awardedPaymentTerms;
+      validateStatusRate();
+      calculateSavings();
+      calculateProgress();
+    }
 
     return this;
   }
@@ -375,12 +378,12 @@ public class DebtDto {
 
     if (this.remainingPaymentTerms != remainingPaymentTerms) {
       this.statusDebt = STATUS_UPDATED_DEBT;
-    }
 
-    this.remainingPaymentTerms = remainingPaymentTerms;
-    validateStatusRate();
-    calculateSavings();
-    calculateProgress();
+      this.remainingPaymentTerms = remainingPaymentTerms;
+      validateStatusRate();
+      calculateSavings();
+      calculateProgress();
+    }
 
     return this;
   }
@@ -401,11 +404,10 @@ public class DebtDto {
 
     if (this.externalFrequency != externalFrequency) {
       this.statusDebt = STATUS_UPDATED_DEBT;
+      this.externalFrequency = externalFrequency;
+      validateStatusRate();
+      calculateSavings();
     }
-
-    this.externalFrequency = externalFrequency;
-    validateStatusRate();
-    calculateSavings();
 
     return this;
   }
@@ -509,6 +511,17 @@ public class DebtDto {
     double rate = LoanSimulator.rateFrequency(kuboRate, getExternalFrequency(), true);
     double kuboPayment = LoanSimulator.payment(amount, getAwardedPaymentTerms(), rate);
     double saving = getPayment() > kuboPayment ? getPayment() - kuboPayment : 0;
+
+    // System.out.println("=================");
+    // System.out.println("Registro: " + registry + ", Monto deuda:" + amount);
+    // System.out
+    // .println("Tasa externa: " + externalRate + ", Tasa kubo: " + kuboRate + ",
+    // Plazo: " + getAwardedPaymentTerms()
+    // + ", Frecuencia: " + getExternalFrequency());
+    // System.out.println("Pago externo: " + getPayment() + ", Pago kubo:" +
+    // kuboPayment + ", Ahorro mensual: " + saving);
+    // System.out.println("Ahorro tota: " + saving * getAwardedPaymentTerms());
+    // System.out.println("=================");
 
     this.monthlyKuboPayment = convertToMonthlyPayment(kuboPayment);
     this.monthlySaving = convertToMonthlyPayment(saving);
