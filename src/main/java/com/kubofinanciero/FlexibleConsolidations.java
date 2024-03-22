@@ -409,7 +409,7 @@ public class FlexibleConsolidations {
         double amountAwarded = debt.getAmountAwarded() > 0 ? debt.getAmountAwarded() : 0;
 
         if (debt.getTypeDebt() == 'R') {
-          offerAmount += balance > 0 ? balance : amountAwarded;
+          offerAmount += balance;
         } else {
           offerAmount += amountAwarded;
         }
