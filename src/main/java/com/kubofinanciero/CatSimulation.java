@@ -83,6 +83,7 @@ public class CatSimulation {
   private void validateSuggestedPayment() {
 
     if (suggestedPayment <= 0) {
+      suggestedPayment = simulatorOffer.getMaxPayment();
       return;
     }
 
