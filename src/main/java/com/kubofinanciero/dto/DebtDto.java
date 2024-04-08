@@ -510,15 +510,15 @@ public class DebtDto {
     double kuboPayment = LoanSimulator.payment(amount, getAwardedPaymentTerms(), rate);
     double saving = getPayment() > kuboPayment ? getPayment() - kuboPayment : 0;
 
-    System.out.println("=================");
-    System.out.println("Registro: " + registry + ", Monto deuda:" + amount);
-    System.out.println("Tasa externa: " + externalRate + ", Tasa kubo: " +
-        kuboRate + ", Plazo: "
-        + getAwardedPaymentTerms() + ", Frecuencia: " + getExternalFrequency());
-    System.out.println("Pago externo: " + getPayment() + ", Pago kubo:" +
-        kuboPayment + ", Ahorro mensual: " + saving);
-    System.out.println("Ahorro tota: " + saving * getAwardedPaymentTerms());
-    System.out.println("=================");
+    // System.out.println("=================");
+    // System.out.println("Registro: " + registry + ", Monto deuda:" + amount);
+    // System.out.println("Tasa externa: " + externalRate + ", Tasa kubo: " +
+    // kuboRate + ", Plazo: "
+    // + getAwardedPaymentTerms() + ", Frecuencia: " + getExternalFrequency());
+    // System.out.println("Pago externo: " + getPayment() + ", Pago kubo:" +
+    // kuboPayment + ", Ahorro mensual: " + saving);
+    // System.out.println("Ahorro tota: " + saving * getAwardedPaymentTerms());
+    // System.out.println("=================");
 
     this.monthlyKuboPayment = convertToMonthlyPayment(kuboPayment);
     this.monthlySaving = convertToMonthlyPayment(saving);

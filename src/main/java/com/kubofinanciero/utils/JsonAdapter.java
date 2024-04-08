@@ -47,6 +47,12 @@ public class JsonAdapter {
       commissionsRate[i] = jsonCommissionsRate.get(i).getAsDouble();
     }
 
+    JsonArray jsonKuboScores = jsonOffer.get("kubo_scores").getAsJsonArray();
+    String[] kuboScores = new String[jsonKuboScores.size()];
+    for (int i = 0; i < kuboScores.length; i++) {
+      kuboScores[i] = jsonKuboScores.get(i).getAsString();
+    }
+
     JsonArray jsonBuroDepts = jsonOffer.get("deudas_buro").getAsJsonArray();
     List<DebtDto> buroDepts = new ArrayList<DebtDto>();
     for (JsonElement deptJsonElement : jsonBuroDepts) {
@@ -87,11 +93,13 @@ public class JsonAdapter {
         jsonOffer.get("plazo_max").getAsInt(),
         jsonOffer.get("tasa").getAsDouble(),
         jsonOffer.get("comision").getAsDouble(),
+        jsonOffer.get("kubo_score").getAsString(),
         jsonOffer.get("proba").getAsDouble(),
         jsonOffer.get("segmento").getAsInt(),
         frequencies,
         assistedRates,
         commissionsRate,
+        kuboScores,
         buroDepts,
         mainJson.get("Prospecto").getAsLong(),
         mainJson.get("bursolnum").getAsLong(),

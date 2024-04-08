@@ -73,9 +73,16 @@ public class FlexibleConsolidations {
   private SimulatorOfferDto simulatorOffer;
   private ConsolidationOfferDto consolidationOffer;
 
-  public FlexibleConsolidations(ConsolidationOfferDto consolidationOffer) {
+  private double discountWeightedRate;
+  private double minimumRateOffer;
+
+  public FlexibleConsolidations(
+      ConsolidationOfferDto consolidationOffer) {
     setConsolidationOffer(consolidationOffer);
     setSimulatorOffer(this.consolidationOffer);
+
+    this.discountWeightedRate = 0;
+    this.minimumRateOffer = 0;
   }
 
   public FlexibleConsolidations(
@@ -106,6 +113,54 @@ public class FlexibleConsolidations {
     this.totalSelectedDebts = totalSelectedDebts;
     this.simulatorOffer = simulatorOffer;
     this.consolidationOffer = consolidationOffer;
+
+    this.discountWeightedRate = 0;
+    this.minimumRateOffer = 0;
+  }
+
+  public FlexibleConsolidations(
+      ConsolidationOfferDto consolidationOffer,
+      double discountWeightedRate,
+      double minimumRateOffer) {
+    setConsolidationOffer(consolidationOffer);
+    setSimulatorOffer(this.consolidationOffer);
+
+    this.discountWeightedRate = discountWeightedRate;
+    this.minimumRateOffer = minimumRateOffer;
+  }
+
+  public FlexibleConsolidations(
+      double offerAmount,
+      double offerRate,
+      double offerCommission,
+      int offerStatus,
+      double weightedRate,
+      double totalSaving,
+      double monthlySavings,
+      double monthlyExternalPayment,
+      int totalDiagnosableDebts,
+      int totalUndiagnosableDebts,
+      int totalSelectedDebts,
+      SimulatorOfferDto simulatorOffer,
+      ConsolidationOfferDto consolidationOffer,
+      double discountWeightedRate,
+      double minimumRateOffer) {
+    this.offerAmount = offerAmount;
+    this.offerRate = offerRate;
+    this.offerCommission = offerCommission;
+    this.offerStatus = offerStatus;
+    this.weightedRate = weightedRate;
+    this.totalSaving = totalSaving;
+    this.monthlySavings = monthlySavings;
+    this.monthlyExternalPayment = monthlyExternalPayment;
+    this.totalDiagnosableDebts = totalDiagnosableDebts;
+    this.totalUndiagnosableDebts = totalUndiagnosableDebts;
+    this.totalSelectedDebts = totalSelectedDebts;
+    this.simulatorOffer = simulatorOffer;
+    this.consolidationOffer = consolidationOffer;
+
+    this.discountWeightedRate = discountWeightedRate;
+    this.minimumRateOffer = minimumRateOffer;
   }
 
   public double getOfferAmount() {
@@ -314,6 +369,14 @@ public class FlexibleConsolidations {
     if (consolidationOffer != null) {
       this.consolidationOffer = consolidationOffer;
     }
+  }
+
+  public void setDiscountWeightedRate(double discountWeightedRate) {
+    this.discountWeightedRate = discountWeightedRate;
+  }
+
+  public void minimumRateOffer(double minimumRateOffer) {
+    this.minimumRateOffer = minimumRateOffer;
   }
 
   /*
