@@ -49,6 +49,7 @@ public class DebtDto {
   private double remainingTotalSavings;
   private int statusDebt;
   private boolean isSelected;
+  private boolean isUploadedDocuments;
 
   private int minPaymentTerm;
   private int maxPaymentTerm;
@@ -74,7 +75,8 @@ public class DebtDto {
       boolean consolidatedDebt,
       double remainingTotalSavings,
       int statusDebt,
-      boolean isSelected) {
+      boolean isSelected,
+      boolean isUploadedDocuments) {
 
     this.registry = registry;
     this.financialEntity = financialEntity;
@@ -97,6 +99,7 @@ public class DebtDto {
     this.consolidatedDebt = consolidatedDebt;
     this.statusDebt = statusDebt;
     this.isSelected = isSelected;
+    this.isUploadedDocuments = isUploadedDocuments;
 
     HashMap<Character, String> typeDebtList = new HashMap<Character, String>();
     typeDebtList.put('I', "Crédito personal");
@@ -217,6 +220,10 @@ public class DebtDto {
 
   public boolean isSelected() {
     return isSelected;
+  }
+
+  public boolean isUploadedDocuments() {
+    return isUploadedDocuments;
   }
 
   public int getMinPaymentTerm() {
@@ -433,6 +440,11 @@ public class DebtDto {
     if (canBeSelected() && editableDept()) {
       this.isSelected = isSelected;
     }
+    return this;
+  }
+
+  public DebtDto setUploadedDocuments(boolean isUploadedDocuments) {
+    this.isUploadedDocuments = isUploadedDocuments;
     return this;
   }
 
@@ -669,6 +681,7 @@ public class DebtDto {
         ", \"remainingTotalSavings\":" + GenericUtilities.round(remainingTotalSavings) +
         ", \"statusDebt\":" + statusDebt +
         ", \"isSelected\":" + isSelected +
+        ", \"isUploadedDocuments\":" + isUploadedDocuments +
         ", \"canBeSelected\":" + canBeSelected() +
         "}";
   }
@@ -699,6 +712,7 @@ public class DebtDto {
         ", \"ahorro_total_restante\":" + remainingTotalSavings +
         ", \"estatus_deuda\":" + statusDebt +
         ", \"seleccionado\":" + isSelected +
+        ", \"documento_subido\":" + isUploadedDocuments +
         ", \"puede_seleccionarse\":" + canBeSelected() +
         "}";
   }

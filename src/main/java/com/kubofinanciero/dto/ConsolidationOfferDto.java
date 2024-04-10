@@ -208,6 +208,13 @@ public class ConsolidationOfferDto {
     return commissionRateList;
   }
 
+  public String[] getKuboScores() {
+    if (kuboScores == null) {
+      kuboScores = new String[] { "" };
+    }
+    return kuboScores;
+  }
+
   public List<DebtDto> getBuroDebts() {
     if (this.buroDebts == null) {
       this.buroDebts = new ArrayList<DebtDto>();

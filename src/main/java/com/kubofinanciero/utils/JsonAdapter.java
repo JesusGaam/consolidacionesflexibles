@@ -79,6 +79,7 @@ public class JsonAdapter {
           dept.get("deuda_consolidable").getAsInt() == 1,
           0,
           0,
+          false,
           false));
     }
 
