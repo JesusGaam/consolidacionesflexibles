@@ -11,6 +11,7 @@ import com.kubofinanciero.utils.LoanSimulator;
  * Atributos:
  *  offerAmount: Monto final de la oferta
  *  offerRate: Tasa kubo final de oferta 
+ *  offerKuboScore: Tasa kubo final de oferta 
  *  offerCommission: Tasa de comision final de oferta
  *  offerCommissionAmount: monto de comisión de oferta
  *  offerStatus: Status global de oferta 
@@ -48,6 +49,7 @@ public class FlexibleConsolidations {
 
   private double offerAmount;
   private double offerRate;
+  private String offerKuboScore;
   private double offerCommission;
   private double offerCommissionAmount;
   private int offerStatus;
@@ -73,9 +75,16 @@ public class FlexibleConsolidations {
   private SimulatorOfferDto simulatorOffer;
   private ConsolidationOfferDto consolidationOffer;
 
-  public FlexibleConsolidations(ConsolidationOfferDto consolidationOffer) {
+  private double discountWeightedRate;
+  private double minimumRateOffer;
+
+  public FlexibleConsolidations(
+      ConsolidationOfferDto consolidationOffer) {
     setConsolidationOffer(consolidationOffer);
     setSimulatorOffer(this.consolidationOffer);
+
+    this.discountWeightedRate = 0;
+    this.minimumRateOffer = 0;
   }
 
   public FlexibleConsolidations(
@@ -106,6 +115,57 @@ public class FlexibleConsolidations {
     this.totalSelectedDebts = totalSelectedDebts;
     this.simulatorOffer = simulatorOffer;
     this.consolidationOffer = consolidationOffer;
+
+    this.offerKuboScore = "";
+    this.discountWeightedRate = 0;
+    this.minimumRateOffer = 0;
+  }
+
+  public FlexibleConsolidations(
+      ConsolidationOfferDto consolidationOffer,
+      double discountWeightedRate,
+      double minimumRateOffer) {
+    setConsolidationOffer(consolidationOffer);
+    setSimulatorOffer(this.consolidationOffer);
+
+    this.discountWeightedRate = discountWeightedRate;
+    this.minimumRateOffer = minimumRateOffer;
+  }
+
+  public FlexibleConsolidations(
+      double offerAmount,
+      double offerRate,
+      String offerKuboScore,
+      double offerCommission,
+      int offerStatus,
+      double weightedRate,
+      double totalSaving,
+      double monthlySavings,
+      double monthlyExternalPayment,
+      int totalDiagnosableDebts,
+      int totalUndiagnosableDebts,
+      int totalSelectedDebts,
+      SimulatorOfferDto simulatorOffer,
+      ConsolidationOfferDto consolidationOffer,
+      double discountWeightedRate,
+      double minimumRateOffer) {
+    this.offerAmount = offerAmount;
+    this.offerRate = offerRate;
+    this.offerKuboScore = offerKuboScore;
+    this.offerCommission = offerCommission;
+    this.offerStatus = offerStatus;
+    this.weightedRate = weightedRate;
+    this.totalSaving = totalSaving;
+    this.monthlySavings = monthlySavings;
+    this.monthlyExternalPayment = monthlyExternalPayment;
+    this.totalDiagnosableDebts = totalDiagnosableDebts;
+    this.totalUndiagnosableDebts = totalUndiagnosableDebts;
+    this.totalSelectedDebts = totalSelectedDebts;
+    this.simulatorOffer = simulatorOffer;
+    this.consolidationOffer = consolidationOffer;
+
+    this.discountWeightedRate = discountWeightedRate;
+    this.minimumRateOffer = minimumRateOffer;
   }
 
   public double getOfferAmount() {
@@ -114,6 +174,13 @@ public class FlexibleConsolidations {
 
   public double getOfferRate() {
     return offerRate;
+  }
+
+  public String getOfferKuboScore() {
+    if (offerKuboScore == null) {
+      offerKuboScore = "";
+    }
+    return offerKuboScore;
   }
 
   public double getOfferCommission() {
@@ -213,8 +280,8 @@ public class FlexibleConsolidations {
   }
 
   /*
-   * Funcion que permite planchar la la comisión y tasas calculada
-   * automaticamnete.
+   * Funcion que permite planchar la comisión, el kubo.score tasas calculada
+   * automaticamente.
    * 
    * @param offerRate Tasa que el asesor decide definir manualmente, solo se
    * pueden agregar tasas que estan dentro de la lista de asistidas.
@@ -224,13 +291,58 @@ public class FlexibleConsolidations {
       return;
     }
 
+    if (offerRate == getConsolidationOffer().getRate()) {
+      setOriginalRateToOfferRate();
+      updateOfferRateOnBuroDebts();
+      return;
+    }
+
     double[] rates = getConsolidationOffer().getAssistedRates();
     double[] comissions = getConsolidationOffer().getCommissionRateList();
+    String[] kuboScores = getConsolidationOffer().getKuboScores();
 
     for (int i = 0; i < rates.length; i++) {
       if (offerRate == rates[i]) {
         this.offerRate = rates[i];
         this.offerCommission = comissions[i];
+        this.offerKuboScore = kuboScores[i];
+        this.offerCommissionAmount = GenericUtilities
+            .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), true));
+        updateOfferRateOnBuroDebts();
+
+        this.offerStatus = STATUS_RATE_MODIFIED_BY_ADVISOR;
+        break;
+      }
+    }
+  }
+
+  /*
+   * Permite planchar el kubo.score, la comisión y tasas calculada
+   * automaticamente en funcion del kubo.score ingresado.
+   * 
+   * @param offerKuboScore kubo.score que el asesor decide definir manualmente,
+   * solo se pueden agregar kubo.scores que estan dentro de la lista de asistidas.
+   */
+  public void setOfferKuboScore(String offerKuboScore) {
+    if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
+      return;
+    }
+
+    if (offerKuboScore == getConsolidationOffer().getKuboScore()) {
+      setOriginalRateToOfferRate();
+      updateOfferRateOnBuroDebts();
+      return;
+    }
+
+    double[] rates = getConsolidationOffer().getAssistedRates();
+    double[] comissions = getConsolidationOffer().getCommissionRateList();
+    String[] kuboScores = getConsolidationOffer().getKuboScores();
+
+    for (int i = 0; i < kuboScores.length; i++) {
+      if (offerKuboScore == kuboScores[i]) {
+        this.offerRate = rates[i];
+        this.offerCommission = comissions[i];
+        this.offerKuboScore = kuboScores[i];
         this.offerCommissionAmount = GenericUtilities
             .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), true));
         updateOfferRateOnBuroDebts();
@@ -254,13 +366,21 @@ public class FlexibleConsolidations {
       return;
     }
 
+    if (offerCommission == getConsolidationOffer().getCommissionRate()) {
+      setOriginalRateToOfferRate();
+      updateOfferRateOnBuroDebts();
+      return;
+    }
+
     double[] rates = getConsolidationOffer().getAssistedRates();
     double[] comissions = getConsolidationOffer().getCommissionRateList();
+    String[] kuboScores = getConsolidationOffer().getKuboScores();
 
     for (int i = 0; i < comissions.length; i++) {
       if (offerCommission == comissions[i]) {
         this.offerRate = rates[i];
         this.offerCommission = comissions[i];
+        this.offerKuboScore = kuboScores[i];
         this.offerCommissionAmount = GenericUtilities
             .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), true));
 
@@ -272,6 +392,13 @@ public class FlexibleConsolidations {
     }
   }
 
+  public void setOriginalRateToOfferRate() {
+    this.offerRate = getConsolidationOffer().getRate();
+    this.offerCommission = 0;
+    this.offerCommissionAmount = 0;
+    this.offerKuboScore = getConsolidationOffer().getKuboScore();
+  }
+
   /*
    * Elimina la tasa agregada manualmente por el asesor por la tasa generada
    * automaticamenten por la logica del simulador.
@@ -279,7 +406,7 @@ public class FlexibleConsolidations {
   public void removeRateModifiedByAdvisor() {
     if (this.offerStatus == STATUS_RATE_MODIFIED_BY_ADVISOR) {
       this.offerStatus = STATUS_RATE_AUTOMATICALLY_CALCULATED;
-      calculateOfferRate(false);
+      calculateOfferRate();
       calculateSaving();
     }
   }
@@ -300,13 +427,13 @@ public class FlexibleConsolidations {
   public void setSimulatorOffer(ConsolidationOfferDto consolidationOffer) {
     if (consolidationOffer != null) {
       this.simulatorOffer = new SimulatorOfferDto(
-          consolidationOffer.getLoanType(),
-          consolidationOffer.getSubLoanType(),
-          consolidationOffer.getMinPayment(),
-          consolidationOffer.getMaxPayment(),
-          consolidationOffer.getMinPaymentTerm(),
-          consolidationOffer.getMaxPaymentTerm(),
-          consolidationOffer.getFrequencies());
+          getConsolidationOffer().getLoanType(),
+          getConsolidationOffer().getSubLoanType(),
+          getConsolidationOffer().getMinPayment(),
+          getConsolidationOffer().getMaxPayment(),
+          getConsolidationOffer().getMinPaymentTerm(),
+          getConsolidationOffer().getMaxPaymentTerm(),
+          getConsolidationOffer().getFrequencies());
     }
   }
 
@@ -316,23 +443,31 @@ public class FlexibleConsolidations {
     }
   }
 
+  public void setDiscountWeightedRate(double discountWeightedRate) {
+    this.discountWeightedRate = discountWeightedRate;
+  }
+
+  public void minimumRateOffer(double minimumRateOffer) {
+    this.minimumRateOffer = minimumRateOffer;
+  }
+
   /*
    * Se debe de invocar para inicializar la oferta de consolidación
    */
   public void initOffer() {
     updateConsolidatedDebts();
-    updateOffer(true);
+    updateOffer();
   }
 
   /*
    * Se debe de invocar cada cuando hay algun cambio de forma manual dentro de los
    * parametros de esta clase o las deudas
    */
-  private void updateOffer(boolean defaultRate) {
+  public void updateOffer() {
     this.offerStatus = STATUS_ORIGINAL_OFFER;
     calculateOfferAmount();
     calculateWeightedRate();
-    calculateOfferRate(defaultRate);
+    calculateOfferRate();
 
     updateBuroDebtsStatistics();
     calculateGlobalAmounts();
@@ -347,10 +482,6 @@ public class FlexibleConsolidations {
         monthlyKuboPayment,
         'M',
         getSimulatorOffer());
-  }
-
-  public void updateOffer() {
-    updateOffer(false);
   }
 
   /**
@@ -440,17 +571,18 @@ public class FlexibleConsolidations {
 
       if (debt.getConsolidatedDebt()) {
         totalRates++;
+        double externalRate = debt.getExternalRate();
 
         switch (debt.getTypeDebt()) {
           case 'I':
             if (debt.isSelected()) {
-              if (debt.getExternalRate() > 0 && debt.getAmountAwarded() > 0) {
-                amountRate += debt.getAmountAwarded() * debt.getExternalRate();
+              if (externalRate > 0 && debt.getAmountAwarded() > 0) {
+                amountRate += debt.getAmountAwarded() * getRateForWeighing(debt);
                 totalAmounts += debt.getAmountAwarded();
               }
             }
 
-            if (debt.getExternalRate() > 0) {
+            if (externalRate > 0) {
               hasRate++;
             } else {
               hasNoRate++;
@@ -459,15 +591,15 @@ public class FlexibleConsolidations {
 
           case 'R':
             if (debt.isSelected()) {
-              double revolvingRate = debt.getExternalRate();
-              if (revolvingRate > 0 && debt.getRevolverType() != DebtDto.REVOLVER_TRANSACTOR_TYPE) {
-                amountRate += debt.getBalance() * revolvingRate;
+              if (externalRate > 0 && debt.getBalance() > 0
+                  && !debt.getRevolverType().equals(DebtDto.REVOLVER_TRANSACTOR_TYPE)) {
+                amountRate += debt.getBalance() * getRateForWeighing(debt);
                 totalAmounts += debt.getBalance();
               }
             }
 
-            if (debt.getRevolverType() != DebtDto.REVOLVER_TRANSACTOR_TYPE) {
-              if (debt.getExternalRate() > 0) {
+            if (!debt.getRevolverType().equals(DebtDto.REVOLVER_TRANSACTOR_TYPE)) {
+              if (externalRate > 0) {
                 hasRate++;
               } else {
                 hasNoRate++;
@@ -481,6 +613,13 @@ public class FlexibleConsolidations {
 
     if (!Double.isNaN(amountRate / totalAmounts)) {
       this.weightedRate = amountRate / totalAmounts;
+      this.weightedRate = this.weightedRate * (1 - this.discountWeightedRate);
+
+      if (this.weightedRate < minimumRateOffer) {
+        this.weightedRate = minimumRateOffer;
+      } else if (this.weightedRate > getConsolidationOffer().getRate()) {
+        this.weightedRate = getConsolidationOffer().getRate();
+      }
     }
 
     if (totalRates == hasRate) {
@@ -492,11 +631,31 @@ public class FlexibleConsolidations {
     }
   }
 
+  private double getRateForWeighing(DebtDto debt) {
+
+    if (!debt.isUploadedDocuments()) {
+      return getConsolidationOffer().getRate();
+    }
+
+    if (debt.getExternalRate() < minimumRateOffer) {
+      return minimumRateOffer;
+    }
+
+    if (debt.getExternalRate() > getConsolidationOffer().getRate()) {
+      return getConsolidationOffer().getRate();
+    }
+
+    return debt.getExternalRate();
+  }
+
   /*
    * Calcula la tasa kubo de forma automatica, con respecto a la lista de tasas
    * seleccionadas
+   * 
+   * Casos de error: Cuando se detecta un error se queda con la tasa y kubo.score
+   * de la Consulta Completa. La comisión deberá ser CERO
    */
-  public void calculateOfferRate(boolean defaultRate) {
+  public void calculateOfferRate() {
 
     if (this.offerStatus == STATUS_RATE_MODIFIED_BY_ADVISOR) {
       return;
@@ -504,57 +663,53 @@ public class FlexibleConsolidations {
 
     double[] ratesList = getConsolidationOffer().getAssistedRates();
     double[] commissionsList = getConsolidationOffer().getCommissionRateList();
+    String[] kuboScores = getConsolidationOffer().getKuboScores();
 
-    if (ratesList.length > 0 && ratesList.length != commissionsList.length) {
-      this.offerRate = 0;
-      this.offerCommission = 0;
-      this.offerCommissionAmount = 0;
+    if (ratesList.length > 0
+        && ratesList.length != commissionsList.length
+        && ratesList.length != kuboScores.length) {
+
+      setOriginalRateToOfferRate();
+      updateOfferRateOnBuroDebts();
       // STATUS: ERROR DE CALCULO
       return;
     }
 
-    double kuboRate = ratesList[0];
-    double kuboRateComission = commissionsList[0];
-    double minFlexibleRate = ratesList[ratesList.length - 1];
-    double minFlexibleComission = commissionsList[commissionsList.length - 1];
-    double flexibleRate = this.weightedRate * 0.9;
-
-    if (defaultRate || kuboRate * 1.1 <= this.weightedRate) {
-      this.offerRate = kuboRate;
-      this.offerCommission = kuboRateComission;
-      this.offerCommissionAmount = GenericUtilities
-          .round(LoanSimulator.cashCommission(kuboRateComission, getOfferAmount(), true));
-
+    if (this.weightedRate >= getConsolidationOffer().getRate()) {
+      setOriginalRateToOfferRate();
       updateOfferRateOnBuroDebts();
-
-      if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
-        return;
-      }
-
-      this.offerStatus = STATUS_ORIGINAL_OFFER;
       return;
     }
 
-    if (flexibleRate > minFlexibleRate) {
-      for (int i = 0; i < ratesList.length; i++) {
+    int previousPositioRate = -1;
+    int positionRate = -1;
+    for (int i = 0; i < ratesList.length; i++) {
 
-        double rate = ratesList[i];
-        double commission = commissionsList[i];
+      previousPositioRate = i == 0 ? i : i - 1;
+      if (this.weightedRate > ratesList[i]) {
 
-        if (flexibleRate > rate) {
-          this.offerRate = rate;
-          this.offerCommission = commission;
-          this.offerCommissionAmount = GenericUtilities
-              .round(LoanSimulator.cashCommission(commission, getOfferAmount(), true));
-
-          break;
+        if (kuboScores[i] == "A1") {
+          if (getConsolidationOffer().getRate() == ratesList[i]) {
+            positionRate = i;
+          } else {
+            positionRate = previousPositioRate;
+          }
+        } else {
+          positionRate = i;
         }
+
+        this.offerRate = this.weightedRate;
+        this.offerCommission = commissionsList[positionRate];
+        this.offerKuboScore = kuboScores[positionRate];
+        this.offerCommissionAmount = GenericUtilities
+            .round(LoanSimulator.cashCommission(commissionsList[positionRate], getOfferAmount(), true));
+
+        // System.out.println("offerRate: " + offerRate +
+        // " offerCommission: " + offerCommission +
+        // " offerKuboScore: " + offerKuboScore +
+        // " offerCommissionAmount: " + offerCommissionAmount);
+        break;
       }
-    } else {
-      this.offerRate = minFlexibleRate;
-      this.offerCommission = minFlexibleComission;
-      this.offerCommissionAmount = GenericUtilities
-          .round(LoanSimulator.cashCommission(minFlexibleComission, getOfferAmount(), true));
     }
 
     updateOfferRateOnBuroDebts();
@@ -586,7 +741,7 @@ public class FlexibleConsolidations {
     double totalSavingAllDebts = 0;
     double monthlySavingAllDebts = 0;
 
-    for (DebtDto debt : consolidationOffer.getBuroDebts()) {
+    for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
 
       if (!debt.getConsolidatedDebt()) {
         continue;
@@ -747,7 +902,7 @@ public class FlexibleConsolidations {
         ", \"maxPaymentTerm\": " + getSimulatorOffer().getMaxPaymentTerm() +
         ", \"cat\": " + catSimulation.getCat() +
         ", \"catCalculationDate\": \"" + catSimulation.getCalculationDate() +
-        "\" , \"buroDebts\":" + consolidationOffer.buroDebtsToJSONString() +
+        "\" , \"buroDebts\":" + getConsolidationOffer().buroDebtsToJSONString() +
         "}";
   }
 
@@ -780,7 +935,7 @@ public class FlexibleConsolidations {
         ", \"maxDebtsRate\":" + maxDebtsRate +
         ", \"catSimulation\":" + catSimulation +
         ", \"simulatorOffer\":" + getSimulatorOffer().toJSONString() +
-        ", \"consolidationOffer\":" + consolidationOffer.toJSONString() +
+        ", \"consolidationOffer\":" + getConsolidationOffer().toJSONString() +
         "}";
   }
 
@@ -809,7 +964,7 @@ public class FlexibleConsolidations {
         ", \"maxDebtsRate\":" + maxDebtsRate +
         ", \"catSimulation\":" + catSimulation +
         ", \"simulatorOffer\":" + simulatorOffer +
-        ", \"consolidationOffer\":" + consolidationOffer +
+        ", \"consolidationOffer\":" + getConsolidationOffer() +
         "}";
   }
 

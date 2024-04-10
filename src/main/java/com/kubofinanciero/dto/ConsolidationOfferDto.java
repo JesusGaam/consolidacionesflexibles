@@ -21,11 +21,13 @@ public class ConsolidationOfferDto {
   private int maxPaymentTerm;
   private double rate;
   private double commissionRate;
+  private String kuboScore;
   private double proba;
   private int segment;
   private char[] frequencies;
   private double[] assistedRates;
   private double[] commissionRateList;
+  private String[] kuboScores;
   private List<DebtDto> buroDebts;
   private long prospectusId;
   private long bursolnum;
@@ -33,6 +35,53 @@ public class ConsolidationOfferDto {
 
   public ConsolidationOfferDto() {
 
+  }
+
+  public ConsolidationOfferDto(
+      String loanType,
+      String subLoanType,
+      double minPayment,
+      double maxPayment,
+      double minAmount,
+      double maxAmount,
+      int minPaymentTerm,
+      int maxPaymentTerm,
+      double rate,
+      double commissionRate,
+      String kuboScore,
+      double proba,
+      int segment,
+      char[] frequencies,
+      double[] assistedRates,
+      double[] commissionRateList,
+      String[] kuboScores,
+      List<DebtDto> buroDebts,
+      long prospectusId,
+      long bursolnum,
+      double maxClientAmount) {
+    this.loanType = loanType;
+    this.subLoanType = subLoanType;
+    this.minPayment = minPayment;
+    this.maxPayment = maxPayment;
+    this.minAmount = minAmount;
+    this.maxAmount = maxAmount;
+    this.minPaymentTerm = minPaymentTerm;
+    this.maxPaymentTerm = maxPaymentTerm;
+    this.rate = rate;
+    this.commissionRate = commissionRate;
+    this.kuboScore = kuboScore;
+    this.proba = proba;
+    this.segment = segment;
+    this.frequencies = frequencies;
+    this.assistedRates = assistedRates;
+    this.commissionRateList = commissionRateList;
+    this.kuboScores = kuboScores;
+    this.buroDebts = buroDebts;
+    this.prospectusId = prospectusId;
+    this.bursolnum = bursolnum;
+    this.maxClientAmount = maxClientAmount;
+
+    addPaymentTermToBuroDebts();
   }
 
   public ConsolidationOfferDto(
@@ -65,11 +114,13 @@ public class ConsolidationOfferDto {
     this.maxPaymentTerm = maxPaymentTerm;
     this.rate = rate;
     this.commissionRate = commissionRate;
+    this.kuboScore = "";
     this.proba = proba;
     this.segment = segment;
     this.frequencies = frequencies;
     this.assistedRates = assistedRates;
     this.commissionRateList = commissionRateList;
+    this.kuboScores = new String[] {};
     this.buroDebts = buroDebts;
     this.prospectusId = prospectusId;
     this.bursolnum = bursolnum;
@@ -120,6 +171,10 @@ public class ConsolidationOfferDto {
     return rate;
   }
 
+  public String getKuboScore() {
+    return kuboScore;
+  }
+
   public double getCommissionRate() {
     return commissionRate;
   }
@@ -151,6 +206,13 @@ public class ConsolidationOfferDto {
       commissionRateList = new double[] { 0 };
     }
     return commissionRateList;
+  }
+
+  public String[] getKuboScores() {
+    if (kuboScores == null) {
+      kuboScores = new String[] { "" };
+    }
+    return kuboScores;
   }
 
   public List<DebtDto> getBuroDebts() {
@@ -217,6 +279,11 @@ public class ConsolidationOfferDto {
 
   public ConsolidationOfferDto setRate(double rate) {
     this.rate = rate;
+    return this;
+  }
+
+  public ConsolidationOfferDto setKuboScore(String kuboScore) {
+    this.kuboScore = kuboScore;
     return this;
   }
 
@@ -302,6 +369,17 @@ public class ConsolidationOfferDto {
     }
   }
 
+  private String kuboScoresToString() {
+    String kuboScoreList = "";
+    for (int i = 0; i < kuboScores.length; i++) {
+      kuboScoreList += "\"" + kuboScores[i] + "\"";
+      if (i < kuboScores.length - 1) {
+        kuboScoreList += ",";
+      }
+    }
+    return "[" + kuboScoreList + "]";
+  }
+
   public String toJSONString() {
     return "{ \"prospectusId\":" + prospectusId +
         ", \"maxClientAmount\":" + maxClientAmount +
@@ -316,12 +394,14 @@ public class ConsolidationOfferDto {
         ", \"minPaymentTerm\":" + minPaymentTerm +
         ",\"maxPaymentTerm\":" + maxPaymentTerm +
         ", \"rate\":" + rate +
-        ", \"commissionRate\":" + commissionRate +
+        ", \"kuboScore\": \"" + kuboScore +
+        "\", \"commissionRate\":" + commissionRate +
         ", \"proba\":" + proba +
         ", \"segment\":" + segment +
         ", \"frequencies\":" + frequenciesToString() +
         ", \"assistedRates\":" + Arrays.toString(assistedRates) +
         ", \"commissionRateList\": " + Arrays.toString(commissionRateList) +
+        ", \"kuboScores\": " + kuboScoresToString() +
         ", \"buroDebts\":" + buroDebtsToJSONString() +
         " }]}";
   }
@@ -341,12 +421,14 @@ public class ConsolidationOfferDto {
         ", \"plazo_min\":" + minPaymentTerm +
         ",\"plazo_max\":" + maxPaymentTerm +
         ", \"tasa\":" + rate +
-        ", \"comision\":" + commissionRate +
+        ", \"kubo_score\": \"" + kuboScore +
+        "\", \"comision\":" + commissionRate +
         ", \"proba\":" + proba +
         ", \"segmento\":" + segment +
         ", \"frecuencia\":" + frequenciesToString() +
         ", \"tasa_asistida\":" + Arrays.toString(assistedRates) +
         ", \"comisiones\": " + Arrays.toString(commissionRateList) +
+        ", \"kubo_scores\": " + kuboScoresToString() +
         ", \"deudas_buro\":" + buroDebts +
         " }]}";
   }

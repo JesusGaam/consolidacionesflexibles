@@ -49,6 +49,7 @@ public class DebtDto {
   private double remainingTotalSavings;
   private int statusDebt;
   private boolean isSelected;
+  private boolean isUploadedDocuments;
 
   private int minPaymentTerm;
   private int maxPaymentTerm;
@@ -74,7 +75,8 @@ public class DebtDto {
       boolean consolidatedDebt,
       double remainingTotalSavings,
       int statusDebt,
-      boolean isSelected) {
+      boolean isSelected,
+      boolean isUploadedDocuments) {
 
     this.registry = registry;
     this.financialEntity = financialEntity;
@@ -97,6 +99,7 @@ public class DebtDto {
     this.consolidatedDebt = consolidatedDebt;
     this.statusDebt = statusDebt;
     this.isSelected = isSelected;
+    this.isUploadedDocuments = isUploadedDocuments;
 
     HashMap<Character, String> typeDebtList = new HashMap<Character, String>();
     typeDebtList.put('I', "Crédito personal");
@@ -217,6 +220,10 @@ public class DebtDto {
 
   public boolean isSelected() {
     return isSelected;
+  }
+
+  public boolean isUploadedDocuments() {
+    return isUploadedDocuments;
   }
 
   public int getMinPaymentTerm() {
@@ -436,6 +443,11 @@ public class DebtDto {
     return this;
   }
 
+  public DebtDto setUploadedDocuments(boolean isUploadedDocuments) {
+    this.isUploadedDocuments = isUploadedDocuments;
+    return this;
+  }
+
   public DebtDto setMinPaymentTerm(int minPaymentTerm) {
     this.minPaymentTerm = minPaymentTerm;
     return this;
@@ -510,15 +522,15 @@ public class DebtDto {
     double kuboPayment = LoanSimulator.payment(amount, getAwardedPaymentTerms(), rate);
     double saving = getPayment() > kuboPayment ? getPayment() - kuboPayment : 0;
 
-    System.out.println("=================");
-    System.out.println("Registro: " + registry + ", Monto deuda:" + amount);
-    System.out.println("Tasa externa: " + externalRate + ", Tasa kubo: " +
-        kuboRate + ", Plazo: "
-        + getAwardedPaymentTerms() + ", Frecuencia: " + getExternalFrequency());
-    System.out.println("Pago externo: " + getPayment() + ", Pago kubo:" +
-        kuboPayment + ", Ahorro mensual: " + saving);
-    System.out.println("Ahorro tota: " + saving * getAwardedPaymentTerms());
-    System.out.println("=================");
+    // System.out.println("=================");
+    // System.out.println("Registro: " + registry + ", Monto deuda:" + amount);
+    // System.out.println("Tasa externa: " + externalRate + ", Tasa kubo: " +
+    // kuboRate + ", Plazo: "
+    // + getAwardedPaymentTerms() + ", Frecuencia: " + getExternalFrequency());
+    // System.out.println("Pago externo: " + getPayment() + ", Pago kubo:" +
+    // kuboPayment + ", Ahorro mensual: " + saving);
+    // System.out.println("Ahorro tota: " + saving * getAwardedPaymentTerms());
+    // System.out.println("=================");
 
     this.monthlyKuboPayment = convertToMonthlyPayment(kuboPayment);
     this.monthlySaving = convertToMonthlyPayment(saving);
@@ -669,6 +681,7 @@ public class DebtDto {
         ", \"remainingTotalSavings\":" + GenericUtilities.round(remainingTotalSavings) +
         ", \"statusDebt\":" + statusDebt +
         ", \"isSelected\":" + isSelected +
+        ", \"isUploadedDocuments\":" + isUploadedDocuments +
         ", \"canBeSelected\":" + canBeSelected() +
         "}";
   }
@@ -699,6 +712,7 @@ public class DebtDto {
         ", \"ahorro_total_restante\":" + remainingTotalSavings +
         ", \"estatus_deuda\":" + statusDebt +
         ", \"seleccionado\":" + isSelected +
+        ", \"documento_subido\":" + isUploadedDocuments +
         ", \"puede_seleccionarse\":" + canBeSelected() +
         "}";
   }
