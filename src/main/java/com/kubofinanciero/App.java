@@ -19,16 +19,17 @@ public class App {
     flexCons.getConsolidationOffer().getBuroDebts().get(0)
         .setExternalRate(0.4130)
         .setUploadedDocuments(true)
-        .setSelected(true);
+        .setSelected(false);
 
     flexCons.getConsolidationOffer().getBuroDebts().get(3)
         .setExternalRate(0.5918)
-        .setUploadedDocuments(true);
+        .setUploadedDocuments(true)
+        .setSelected(false);
 
     flexCons.getConsolidationOffer().getBuroDebts().get(4)
         .setExternalRate(0.724)
         .setUploadedDocuments(true)
-        .setSelected(true);
+        .setSelected(false);
 
     flexCons.getConsolidationOffer().getBuroDebts().get(5)
         .setExternalRate(0.3912)
@@ -47,9 +48,6 @@ public class App {
     // System.out.println(flexCons.toJSONString());
     // System.out.println(flexCons.toJSONStringPdf("Juan", null));
 
-    System.out.println("Weighted Rate: " + flexCons.getWeightedRate());
-    System.out.println(" ");
-
     System.out.println("Original Rate: " + flexCons.getConsolidationOffer().getRate());
     System.out.println("Original kubo.score: " + flexCons.getConsolidationOffer().getKuboScore());
     System.out.println("Original Commission: " + flexCons.getConsolidationOffer().getCommissionRate());
@@ -58,6 +56,38 @@ public class App {
     System.out.println("Offer Rate: " + flexCons.getOfferRate());
     System.out.println("Offer kubo.score: " + flexCons.getOfferKuboScore());
     System.out.println("Offer Commission: " + flexCons.getOfferCommission());
+    System.out.println("Offer Commission Amount: " + flexCons.getOfferCommissionAmount());
 
+    System.out.println(" ");
+    System.out.println("Status Offer: " + flexCons.getOfferStatus());
+    System.out.println("Weighted Rate: " + flexCons.getWeightedRate());
+    System.out.println("Total Savings: " + flexCons.getTotalSaving());
+
+    System.out.println(" ");
+    System.out.println("====== ACTAUALIZACION MANUAL DE TASA ======");
+    flexCons.setOfferRate(0.5991);
+    flexCons.updateOffer(false);
+
+    System.out.println("Offer Rate: " + flexCons.getOfferRate());
+    System.out.println("Offer kubo.score: " + flexCons.getOfferKuboScore());
+    System.out.println("Offer Commission: " + flexCons.getOfferCommission());
+    System.out.println("Offer Commission Amount: " + flexCons.getOfferCommissionAmount());
+
+    System.out.println(" ");
+    System.out.println("Status Offer: " + flexCons.getOfferStatus());
+    System.out.println("Weighted Rate: " + flexCons.getWeightedRate());
+    System.out.println("Total Savings: " + flexCons.getTotalSaving());
+
+    System.out.println(" ");
+    System.out.println("====== SIMULACION ======");
+    System.out.println(flexCons.getCatSimulation());
+
+    System.out.println(" ");
+    System.out.println("====== SIMULACION ACTUALIZADA ======");
+    flexCons.updateCatSimulation(0, 'W');
+    System.out.println(flexCons.getCatSimulation());
+
+    // System.out.println(" ");
+    // System.out.println(flexCons);
   }
 }
