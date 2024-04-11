@@ -187,6 +187,10 @@ public class FlexibleConsolidations {
     return offerCommission;
   }
 
+  public double getOfferCommissionAmount() {
+    return offerCommissionAmount;
+  }
+
   public int getOfferStatus() {
     return offerStatus;
   }
@@ -294,6 +298,8 @@ public class FlexibleConsolidations {
     if (offerRate == getConsolidationOffer().getRate()) {
       setOriginalRateToOfferRate();
       updateOfferRateOnBuroDebts();
+
+      this.offerStatus = STATUS_RATE_MODIFIED_BY_ADVISOR;
       return;
     }
 
@@ -331,6 +337,8 @@ public class FlexibleConsolidations {
     if (offerKuboScore == getConsolidationOffer().getKuboScore()) {
       setOriginalRateToOfferRate();
       updateOfferRateOnBuroDebts();
+
+      this.offerStatus = STATUS_RATE_MODIFIED_BY_ADVISOR;
       return;
     }
 
@@ -369,6 +377,8 @@ public class FlexibleConsolidations {
     if (offerCommission == getConsolidationOffer().getCommissionRate()) {
       setOriginalRateToOfferRate();
       updateOfferRateOnBuroDebts();
+
+      this.offerStatus = STATUS_RATE_MODIFIED_BY_ADVISOR;
       return;
     }
 
@@ -447,6 +457,10 @@ public class FlexibleConsolidations {
     this.discountWeightedRate = discountWeightedRate;
   }
 
+  public void updateCatSimulation(int suggestedPaymentTerm, char frequency) {
+    catSimulation = new CatSimulation(suggestedPaymentTerm, frequency, getSimulatorOffer());
+  }
+
   public void minimumRateOffer(double minimumRateOffer) {
     this.minimumRateOffer = minimumRateOffer;
   }
@@ -463,11 +477,16 @@ public class FlexibleConsolidations {
    * Se debe de invocar cada cuando hay algun cambio de forma manual dentro de los
    * parametros de esta clase o las deudas
    */
-  public void updateOffer() {
-    this.offerStatus = STATUS_ORIGINAL_OFFER;
+  public void updateOffer(boolean calculateOfferRate) {
+    if (calculateOfferRate) {
+      this.offerStatus = STATUS_ORIGINAL_OFFER;
+    }
+
     calculateOfferAmount();
     calculateWeightedRate();
-    calculateOfferRate();
+    if (calculateOfferRate) {
+      calculateOfferRate();
+    }
 
     updateBuroDebtsStatistics();
     calculateGlobalAmounts();
@@ -478,10 +497,11 @@ public class FlexibleConsolidations {
     getSimulatorOffer().setRate(this.offerRate);
     getSimulatorOffer().setCommissionRate(this.offerCommission);
 
-    catSimulation = new CatSimulation(
-        monthlyKuboPayment,
-        'M',
-        getSimulatorOffer());
+    catSimulation = new CatSimulation(monthlyKuboPayment, getSimulatorOffer());
+  }
+
+  public void updateOffer() {
+    updateOffer(true);
   }
 
   /**
