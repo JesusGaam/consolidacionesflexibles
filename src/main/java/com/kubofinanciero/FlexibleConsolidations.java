@@ -633,12 +633,15 @@ public class FlexibleConsolidations {
 
     if (!Double.isNaN(amountRate / totalAmounts)) {
       this.weightedRate = amountRate / totalAmounts;
-      this.weightedRate = this.weightedRate * (1 - this.discountWeightedRate);
+      double weightedRateWithDiscount = this.weightedRate * (1 - this.discountWeightedRate);
 
-      if (this.weightedRate < minimumRateOffer) {
+      if (this.weightedRate <= minimumRateOffer || weightedRateWithDiscount <= minimumRateOffer) {
         this.weightedRate = minimumRateOffer;
-      } else if (this.weightedRate > getConsolidationOffer().getRate()) {
+      } else if (this.weightedRate >= getConsolidationOffer().getRate()
+          || weightedRateWithDiscount >= getConsolidationOffer().getRate()) {
         this.weightedRate = getConsolidationOffer().getRate();
+      } else {
+        this.weightedRate = weightedRateWithDiscount;
       }
     }
 
@@ -661,10 +664,9 @@ public class FlexibleConsolidations {
       return minimumRateOffer;
     }
 
-    if (debt.getExternalRate() > getConsolidationOffer().getRate()) {
-      return getConsolidationOffer().getRate();
-    }
-
+    // if (debt.getExternalRate() > getConsolidationOffer().getRate()) {
+    // return getConsolidationOffer().getRate();
+    // }
     return debt.getExternalRate();
   }
 
@@ -701,36 +703,35 @@ public class FlexibleConsolidations {
       return;
     }
 
-    int previousPositioRate = -1;
-    int positionRate = -1;
+    int previousPositioRate = 0;
+    int positionRate = 0;
+
     for (int i = 0; i < ratesList.length; i++) {
 
       previousPositioRate = i == 0 ? i : i - 1;
-      if (this.weightedRate > ratesList[i]) {
+      positionRate = i;
 
+      if (this.weightedRate > ratesList[i]) {
         if (kuboScores[i] == "A1") {
-          if (getConsolidationOffer().getRate() == ratesList[i]) {
-            positionRate = i;
-          } else {
+          if (getConsolidationOffer().getRate() != ratesList[i]) {
             positionRate = previousPositioRate;
           }
-        } else {
-          positionRate = i;
         }
-
-        this.offerRate = this.weightedRate;
-        this.offerCommission = commissionsList[positionRate];
-        this.offerKuboScore = kuboScores[positionRate];
-        this.offerCommissionAmount = GenericUtilities
-            .round(LoanSimulator.cashCommission(commissionsList[positionRate], getOfferAmount(), true));
-
-        // System.out.println("offerRate: " + offerRate +
-        // " offerCommission: " + offerCommission +
-        // " offerKuboScore: " + offerKuboScore +
-        // " offerCommissionAmount: " + offerCommissionAmount);
         break;
       }
     }
+
+    this.offerRate = this.weightedRate;
+    this.offerCommission = commissionsList[positionRate];
+    this.offerKuboScore = kuboScores[positionRate];
+    this.offerCommissionAmount = GenericUtilities
+        .round(LoanSimulator.cashCommission(commissionsList[positionRate], getOfferAmount(), true));
+
+    // System.out.println("positionRate: " + positionRate +
+    // " offerRate: " + offerRate +
+    // " offerCommission: " + offerCommission +
+    // " offerKuboScore: " + offerKuboScore +
+    // " offerCommissionAmount: " + offerCommissionAmount);
 
     updateOfferRateOnBuroDebts();
     if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {

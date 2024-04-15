@@ -200,20 +200,28 @@ public class CatSimulation {
     int minPaymentTerm = 0;
     int maxPaymentTerm = 0;
 
-    for (int paymentTerm = this.minPaymentTerm; paymentTerm <= this.maxPaymentTerm; paymentTerm++) {
+    for (int paymentTerm = this.maxPaymentTerm; paymentTerm >= this.minPaymentTerm; paymentTerm--) {
       double payment = LoanSimulator.payment(amount, paymentTerm, ratefrequency);
-      if (payment <= this.maxPayment && minPaymentTerm == 0) {
-        minPaymentTerm = paymentTerm;
-      }
 
-      if (payment <= this.minPayment && maxPaymentTerm == 0) {
+      if (payment >= this.minPayment) {
         maxPaymentTerm = paymentTerm;
         break;
       }
     }
 
-    if (maxPaymentTerm == 0) {
-      maxPaymentTerm = this.maxPaymentTerm;
+    for (int paymentTerm = this.minPaymentTerm; paymentTerm <= this.maxPaymentTerm; paymentTerm++) {
+      double payment = LoanSimulator.payment(amount, paymentTerm, ratefrequency);
+
+      if (payment <= this.maxPayment) {
+        minPaymentTerm = paymentTerm;
+        break;
+      }
+    }
+
+    if (minPaymentTerm == 0 || maxPaymentTerm == 0) {
+      this.minPaymentTerm = 0;
+      this.maxPaymentTerm = 0;
+      return;
     }
 
     this.minPaymentTerm = minPaymentTerm;
@@ -300,20 +308,20 @@ public class CatSimulation {
   public static void main(String[] args) {
 
     SimulatorOfferDto so = new SimulatorOfferDto()
-        .setMaxAmount(30000.0)
-        .setMinAmount(30000.0)
+        .setMaxAmount(900000.0)
+        .setMinAmount(900000.0)
         .setRate(0.3582)
-        .setMinPayment(2800)
-        .setMaxPayment(3200)
-        .setMinPaymentTerm(8)
-        .setMaxPaymentTerm(40)
+        .setMinPayment(6311)
+        .setMaxPayment(10802)
+        .setMinPaymentTerm(4)
+        .setMaxPaymentTerm(12)
         .setFrequencies(new char[] { 'M', 'S', 'K', 'W' });
 
     CatSimulation cat = new CatSimulation(2650, so);
     System.out.println(cat);
 
-    CatSimulation cat2 = new CatSimulation(60, 'K', so);
-    System.out.println(cat2);
+    // CatSimulation cat2 = new CatSimulation(60, 'K', so);
+    // System.out.println(cat2);
 
   }
 }
