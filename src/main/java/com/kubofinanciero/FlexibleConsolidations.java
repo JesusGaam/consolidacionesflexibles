@@ -687,9 +687,9 @@ public class FlexibleConsolidations {
     double[] commissionsList = getConsolidationOffer().getCommissionRateList();
     String[] kuboScores = getConsolidationOffer().getKuboScores();
 
-    if (ratesList.length == 0 || (ratesList.length > 0
+    if (ratesList.length > 0
         && ratesList.length != commissionsList.length
-        && ratesList.length != kuboScores.length)) {
+        && ratesList.length != kuboScores.length) {
 
       setOriginalRateToOfferRate();
       updateOfferRateOnBuroDebts();
@@ -722,10 +722,16 @@ public class FlexibleConsolidations {
     }
 
     this.offerRate = this.weightedRate;
-    this.offerCommission = commissionsList[positionRate];
-    this.offerKuboScore = kuboScores[positionRate];
-    this.offerCommissionAmount = GenericUtilities
-        .round(LoanSimulator.cashCommission(commissionsList[positionRate], getOfferAmount(), true));
+    if (ratesList.length > 0) {
+      this.offerCommission = commissionsList[positionRate];
+      this.offerKuboScore = kuboScores[positionRate];
+      this.offerCommissionAmount = GenericUtilities
+          .round(LoanSimulator.cashCommission(commissionsList[positionRate], getOfferAmount(), true));
+    } else {
+      this.offerCommission = 0;
+      this.offerCommissionAmount = 0;
+      this.offerKuboScore = getConsolidationOffer().getKuboScore();
+    }
 
     // System.out.println("positionRate: " + positionRate +
     // " offerRate: " + offerRate +
