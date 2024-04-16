@@ -687,9 +687,9 @@ public class FlexibleConsolidations {
     double[] commissionsList = getConsolidationOffer().getCommissionRateList();
     String[] kuboScores = getConsolidationOffer().getKuboScores();
 
-    if (ratesList.length > 0
+    if (ratesList.length == 0 || (ratesList.length > 0
         && ratesList.length != commissionsList.length
-        && ratesList.length != kuboScores.length) {
+        && ratesList.length != kuboScores.length)) {
 
       setOriginalRateToOfferRate();
       updateOfferRateOnBuroDebts();
