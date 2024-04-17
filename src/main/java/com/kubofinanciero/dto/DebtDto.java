@@ -636,17 +636,13 @@ public class DebtDto {
 
   private void validateStatusRate() {
     double amount = getAmountAwarded();
-    int paymentTerm = getAwardedPaymentTerms();
+    boolean payment = this.typeDebt == 'I' ? this.payment > 0 : true;
 
     if (this.typeDebt == 'R') {
       amount = getBalance();
-
-      if (paymentTerm <= 0) {
-        paymentTerm = getMaxPaymentTerm();
-      }
     }
 
-    if (externalRate > 0 && payment > 0 && amount > 0 && paymentTerm > 0) {
+    if (externalRate > 0 && amount > 0 && (this.typeDebt == 'R' && payment)) {
       this.statusRate = "Calculable";
     }
   }
