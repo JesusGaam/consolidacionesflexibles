@@ -23,7 +23,9 @@ import com.kubofinanciero.utils.LoanSimulator;
  *  monthlySavingAllDebts: Ahorro mensual, obtenida de las deudas consolidables seleccionadas y no seleccionadas
  *  totalSavingMissingDebts: Ahorro total, de las deudas NO seleccionadas
  *  monthlySavingsMissingDebts: Ahorro mensual, obtenida de las deudas NO seleccionadas
- *  totalAmountToConsolidate: Es el monto total de las deudsa consolidables sin importar que esten seleccionadas o no.
+ *  totalAmountSelectedDebts: Es el monto total de las deudas seleccionadas
+ *  totalAmountToConsolidate: Es el monto total a recibir, se calcula restandole la comision al monto de oferta
+ *  totalAmountToReceive: Es el monto total de las deudas consolidables sin importar que esten seleccionadas o no.
  *  excedentAmount : El Colchoncito es lo que le sobrara despues de pagar todas sus deudas. Se calcula restando el saldo del monto otorgado,
  *  consolidableMissingAmount: Monto restante para consolidar, es el monto a consolidar de las deudas no seleccionadas. 
  *  monthlyExternalPayment: Es lo que el cliente esta pagando mensualmente de sus deudas seleccionadas
@@ -35,6 +37,7 @@ import com.kubofinanciero.utils.LoanSimulator;
  *  simulatorOffer: Objeto que funge como inputs para el simulador
  *  consolidationOffer: Objeto que almacena el estatus actual de la oferta entregada por data
  *  catSimulation: Simulación utilizada para estimar el CAT. Tambien podría ser utilizada como una oferta previa.
+ *  includeCommissionInOfferAmount: Parametro utilizado para agregar la comisión al monto total de deudas
  */
 public class FlexibleConsolidations {
 
@@ -61,7 +64,9 @@ public class FlexibleConsolidations {
   private double monthlySavingAllDebts;
   private double totalSavingMissingDebts;
   private double monthlySavingsMissingDebts;
+  private double totalAmountSelectedDebts;
   private double totalAmountToConsolidate;
+  private double totalAmountToReceive;
   private double excedentAmount;
   private double consolidableMissingAmount;
   private double monthlyExternalPayment;
@@ -71,6 +76,7 @@ public class FlexibleConsolidations {
   private int totalSelectedDebts;
   private double maxDebtsRate;
   private CatSimulation catSimulation;
+  private boolean includeCommissionInOfferAmount;
 
   private SimulatorOfferDto simulatorOffer;
   private ConsolidationOfferDto consolidationOffer;
@@ -85,6 +91,7 @@ public class FlexibleConsolidations {
 
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
+    this.includeCommissionInOfferAmount = true;
   }
 
   public FlexibleConsolidations(
@@ -119,6 +126,7 @@ public class FlexibleConsolidations {
     this.offerKuboScore = "";
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
+    this.includeCommissionInOfferAmount = true;
   }
 
   public FlexibleConsolidations(
@@ -130,6 +138,7 @@ public class FlexibleConsolidations {
 
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
+    this.includeCommissionInOfferAmount = true;
   }
 
   public FlexibleConsolidations(
@@ -166,6 +175,7 @@ public class FlexibleConsolidations {
 
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
+    this.includeCommissionInOfferAmount = true;
   }
 
   public double getOfferAmount() {
@@ -227,8 +237,16 @@ public class FlexibleConsolidations {
     return monthlySavingsMissingDebts;
   }
 
+  public double getTotalAmountSelectedDebts() {
+    return totalAmountSelectedDebts;
+  }
+
   public double getTotalAmountToConsolidate() {
     return totalAmountToConsolidate;
+  }
+
+  public double getTotalAmountToReceive() {
+    return totalAmountToReceive;
   }
 
   public double getExcedentAmount() {
@@ -265,6 +283,10 @@ public class FlexibleConsolidations {
     }
 
     return catSimulation;
+  }
+
+  public boolean getIncludeCommissionInOfferAmount() {
+    return includeCommissionInOfferAmount;
   }
 
   public SimulatorOfferDto getSimulatorOffer() {
@@ -482,14 +504,13 @@ public class FlexibleConsolidations {
       this.offerStatus = STATUS_ORIGINAL_OFFER;
     }
 
-    calculateOfferAmount();
     calculateWeightedRate();
     if (calculateOfferRate) {
       calculateOfferRate();
     }
 
-    updateBuroDebtsStatistics();
     calculateGlobalAmounts();
+    updateBuroDebtsStatistics();
     calculateSaving();
 
     getSimulatorOffer().setMinAmount(this.offerAmount);
@@ -573,6 +594,10 @@ public class FlexibleConsolidations {
     if (this.offerAmount > getConsolidationOffer().getMaxAmount()) {
       this.offerStatus = STATUS_EXCEEDED_AMOUNT;
     }
+  }
+
+  public void addCommissionToOfferAmount(boolean includeCommision) {
+    this.includeCommissionInOfferAmount = includeCommision;
   }
 
   /*
@@ -810,6 +835,7 @@ public class FlexibleConsolidations {
    * Calcula el monto total de todas las deudas que pueden ser consolidables
    */
   private void calculateGlobalAmounts() {
+    double totalAmountSelectedDebts = 0;
     double totalAmountToConsolidate = 0;
     double monthlyExternalPayment = 0;
     double monthlyKuboPayment = 0;
@@ -826,10 +852,21 @@ public class FlexibleConsolidations {
             break;
         }
       }
+
       if (debt.isSelected()) {
+
         totalSaving += debt.getTotalSaving();
         monthlyExternalPayment += debt.getPayment();
         monthlyKuboPayment += debt.getMonthlyKuboPayment();
+
+        double balance = debt.getBalance() > 0 ? debt.getBalance() : 0;
+        double amountAwarded = debt.getAmountAwarded() > 0 ? debt.getAmountAwarded() : 0;
+
+        if (debt.getTypeDebt() == 'R') {
+          totalAmountSelectedDebts += balance;
+        } else {
+          totalAmountSelectedDebts += amountAwarded;
+        }
 
         if (debt.getTypeDebt() != 'R'
             && debt.getAmountAwarded() > debt.getBalance()) {
@@ -838,11 +875,27 @@ public class FlexibleConsolidations {
       }
     }
 
+    this.totalAmountSelectedDebts = GenericUtilities.round(totalAmountSelectedDebts);
     this.excedentAmount = GenericUtilities.round(excedentAmount);
     this.monthlyExternalPayment = GenericUtilities.round(monthlyExternalPayment);
     this.monthlyKuboPayment = monthlyKuboPayment;
     this.totalAmountToConsolidate = GenericUtilities.round(totalAmountToConsolidate);
-    this.consolidableMissingAmount = GenericUtilities.round(totalAmountToConsolidate - this.offerAmount);
+    this.consolidableMissingAmount = GenericUtilities.round(totalAmountToConsolidate - this.totalAmountSelectedDebts);
+
+    if (includeCommissionInOfferAmount) {
+      this.offerAmount = GenericUtilities.round(LoanSimulator.addCommissionToAmount(totalAmountSelectedDebts,
+          getOfferCommission(), true));
+    } else {
+      this.offerAmount = totalAmountSelectedDebts;
+    }
+
+    this.offerCommissionAmount = GenericUtilities
+        .round(LoanSimulator.cashCommission(this.offerAmount, getOfferCommission(), true));
+    this.totalAmountToReceive = GenericUtilities.round(this.offerAmount - this.offerCommissionAmount);
+
+    if (this.totalAmountSelectedDebts > getConsolidationOffer().getMaxAmount()) {
+      this.offerStatus = STATUS_EXCEEDED_AMOUNT;
+    }
   }
 
   private int calculateAvgPaymentTerm() {
@@ -923,7 +976,9 @@ public class FlexibleConsolidations {
         ", \"monthlySavingAllDebts\": " + GenericUtilities.round(monthlySavingAllDebts) +
         ", \"totalSavingMissingDebts\": " + GenericUtilities.round(totalSavingMissingDebts) +
         ", \"monthlySavingsMissingDebts\": " + GenericUtilities.round(monthlySavingsMissingDebts) +
+        ", \"totalAmountSelectedDebts\": " + GenericUtilities.round(totalAmountSelectedDebts) +
         ", \"totalAmountToConsolidate\": " + GenericUtilities.round(totalAmountToConsolidate) +
+        ", \"totalAmountToReceive\": " + GenericUtilities.round(totalAmountToReceive) +
         ", \"consolidableMissingAmount\": " + GenericUtilities.round(consolidableMissingAmount) +
         ", \"minPaymentTerm\": " + getSimulatorOffer().getMinPaymentTerm() +
         ", \"maxPaymentTerm\": " + getSimulatorOffer().getMaxPaymentTerm() +
@@ -952,7 +1007,9 @@ public class FlexibleConsolidations {
         ", \"monthlySavingAllDebts\":" + monthlySavingAllDebts +
         ", \"totalSavingMissingDebts\":" + totalSavingMissingDebts +
         ", \"monthlySavingsMissingDebts\":" + monthlySavingsMissingDebts +
+        ", \"totalAmountSelectedDebts\":" + totalAmountSelectedDebts +
         ", \"totalAmountToConsolidate\":" + totalAmountToConsolidate +
+        ", \"totalAmountToReceive\": " + totalAmountToReceive +
         ", \"excedentAmount\":" + excedentAmount +
         ", \"consolidableMissingAmount\":" + consolidableMissingAmount +
         ", \"monthlyExternalPayment\":" + monthlyExternalPayment +
@@ -981,7 +1038,9 @@ public class FlexibleConsolidations {
         ", \"monthlySavingAllDebts\":" + monthlySavingAllDebts +
         ", \"totalSavingMissingDebts\":" + totalSavingMissingDebts +
         ", \"monthlySavingsMissingDebts\":" + monthlySavingsMissingDebts +
+        ", \"totalAmountSelectedDebts\":" + totalAmountSelectedDebts +
         ", \"totalAmountToConsolidate\":" + totalAmountToConsolidate +
+        ", \"totalAmountToReceive\": " + totalAmountToReceive +
         ", \"excedentAmount\":" + excedentAmount +
         ", \"consolidableMissingAmount\":" + consolidableMissingAmount +
         ", \"monthlyExternalPayment\":" + monthlyExternalPayment +
