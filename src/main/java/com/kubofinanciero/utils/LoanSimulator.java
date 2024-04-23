@@ -67,6 +67,12 @@ public class LoanSimulator {
     return amount * commissionPercent * ivaPercentage;
   }
 
+  public static double addCommissionToAmount(double amount, double commissionPercent, boolean iva) {
+    double ivaPercentage = iva ? 1.16 : 1;
+    double commission = commissionPercent * ivaPercentage;
+    return amount / (1 - commission);
+  }
+
   public static double disbursement(double amount, double commissionPercent, boolean iva) {
     double commission = cashCommission(amount, commissionPercent, iva);
     return amount - commission;
@@ -183,6 +189,15 @@ public class LoanSimulator {
     System.out.println("Total payments: " + totalPayments);
     System.out.println("CAT:" + cat.getCAT());
     System.out.println("Amortization table:" + amortizationTable);
+
+    double commissionAndAmount = LoanSimulator.addCommissionToAmount(amount, commissionRate, true);
+    double onlyCommission = LoanSimulator.cashCommission(commissionAndAmount, commissionRate, true);
+    System.out.println("");
+    System.out.println("COMISION + MONTO");
+    System.out.println("=====================================");
+    System.err.println("Amount + Commission: " + commissionAndAmount);
+    System.err.println("Only Commission: " + onlyCommission);
+    System.err.println("Amount - Commission: " + (commissionAndAmount - onlyCommission));
 
   }
 }

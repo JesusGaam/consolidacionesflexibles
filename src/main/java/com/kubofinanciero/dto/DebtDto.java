@@ -544,7 +544,6 @@ public class DebtDto {
       return;
     }
 
-    double payment = 0;
     double rate = LoanSimulator.rateFrequency(getExternalRate(), getExternalFrequency(), true);
     int paymentTerms = LoanSimulator.totalPayments(getBalance(), getPayment(), rate);
 
@@ -553,11 +552,9 @@ public class DebtDto {
     } else if (paymentTerms < getMinPaymentTerm()) {
       paymentTerms = getMinPaymentTerm();
     }
-    payment = LoanSimulator.payment(getBalance(), paymentTerms, rate);
 
     this.awardedPaymentTerms = paymentTerms;
     this.remainingPaymentTerms = paymentTerms;
-    this.payment = payment;
 
   }
 
@@ -642,7 +639,7 @@ public class DebtDto {
       amount = getBalance();
     }
 
-    if (externalRate > 0 && amount > 0 && (this.typeDebt == 'R' && payment)) {
+    if (externalRate > 0 && amount > 0 && payment) {
       this.statusRate = "Calculable";
     }
   }
