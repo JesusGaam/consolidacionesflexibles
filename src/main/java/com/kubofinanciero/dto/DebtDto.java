@@ -101,6 +101,8 @@ public class DebtDto {
     this.isSelected = isSelected;
     this.isUploadedDocuments = isUploadedDocuments;
 
+    debtInitValidation();
+
     HashMap<Character, String> typeDebtList = new HashMap<Character, String>();
     typeDebtList.put('I', "Crédito personal");
     typeDebtList.put('R', "Tarjeta de crédito");
@@ -113,6 +115,17 @@ public class DebtDto {
     typeDebtName = typeDebtList.get(typeDebt);
     if (typeDebtName == null) {
       typeDebtName = "No clasificado";
+    }
+  }
+
+  private void debtInitValidation() {
+    if (canBeSelected() && typeDebt == 'I' && externalRate > 0 && externalRate < 1) {
+      externalRate = -1;
+      monthlyKuboPayment = 0;
+      monthlySaving = 0;
+      totalSaving = 0;
+      remainingTotalSavings = 0;
+      statusRate = "No calculable";
     }
   }
 
@@ -509,12 +522,12 @@ public class DebtDto {
       calculateRevolverPaymentTerms();
     }
 
-    if (getExternalFrequency() == 'V' || getExternalFrequency() == 'P' || amount <= 0) {
+    if (getExternalFrequency() == 'V' || getExternalFrequency() == 'P' || amount <= 0
+        || getAwardedPaymentTerms() <= 0 || getPayment() <= 0) {
       this.monthlyKuboPayment = 0;
       this.monthlySaving = 0;
       this.totalSaving = 0;
       this.remainingTotalSavings = 0;
-
       return;
     }
 
@@ -633,13 +646,12 @@ public class DebtDto {
 
   private void validateStatusRate() {
     double amount = getAmountAwarded();
-    boolean payment = this.typeDebt == 'I' ? this.payment > 0 : true;
 
     if (this.typeDebt == 'R') {
       amount = getBalance();
     }
 
-    if (externalRate > 0 && amount > 0 && payment) {
+    if (externalRate > 0 && amount > 0 && this.payment > 0) {
       this.statusRate = "Calculable";
     }
   }

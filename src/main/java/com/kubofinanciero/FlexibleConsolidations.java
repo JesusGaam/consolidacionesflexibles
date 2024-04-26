@@ -50,6 +50,8 @@ public class FlexibleConsolidations {
   public static final int WEIGHTED_RATE_TYPE_KNOWN = 1;
   public static final int WEIGHTED_RATE_TYPE_UNKNOWN = 2;
 
+  public static final int EXTENDED_PAYMENT_TERM = 6;
+
   private double offerAmount;
   private double offerRate;
   private String offerKuboScore;
@@ -480,7 +482,10 @@ public class FlexibleConsolidations {
   }
 
   public void updateCatSimulation(int suggestedPaymentTerm, char frequency) {
-    catSimulation = new CatSimulation(suggestedPaymentTerm, frequency, getSimulatorOffer());
+    getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
+    catSimulation = new CatSimulation(getSuggestedPayment(), suggestedPaymentTerm, frequency, getSimulatorOffer(),
+        EXTENDED_PAYMENT_TERM);
+    getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
   }
 
   public void minimumRateOffer(double minimumRateOffer) {
@@ -517,8 +522,10 @@ public class FlexibleConsolidations {
     getSimulatorOffer().setMaxAmount(this.offerAmount);
     getSimulatorOffer().setRate(this.offerRate);
     getSimulatorOffer().setCommissionRate(this.offerCommission);
+    getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
 
-    catSimulation = new CatSimulation(monthlyKuboPayment, getSimulatorOffer());
+    catSimulation = new CatSimulation(getSuggestedPayment(), getSimulatorOffer(), EXTENDED_PAYMENT_TERM);
+    getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
   }
 
   public void updateOffer() {
@@ -618,44 +625,32 @@ public class FlexibleConsolidations {
         totalRates++;
         double externalRate = debt.getExternalRate();
 
-        switch (debt.getTypeDebt()) {
-          case 'I':
-            if (debt.isSelected()) {
+        if (debt.isSelected()) {
+          switch (debt.getTypeDebt()) {
+            case 'I':
               if (externalRate > 0 && debt.getAmountAwarded() > 0) {
                 amountRate += debt.getAmountAwarded() * getRateForWeighing(debt);
                 totalAmounts += debt.getAmountAwarded();
               }
-            }
+              break;
 
-            if (externalRate > 0) {
-              hasRate++;
-            } else {
-              hasNoRate++;
-            }
-            break;
-
-          case 'R':
-            if (debt.isSelected()) {
-              if (externalRate > 0 && debt.getBalance() > 0
-                  && !debt.getRevolverType().equals(DebtDto.REVOLVER_TRANSACTOR_TYPE)) {
+            case 'R':
+              System.out.println(debt);
+              if (externalRate > 0 && debt.getBalance() > 0) {
                 amountRate += debt.getBalance() * getRateForWeighing(debt);
                 totalAmounts += debt.getBalance();
               }
-            }
-
-            if (!debt.getRevolverType().equals(DebtDto.REVOLVER_TRANSACTOR_TYPE)) {
-              if (externalRate > 0) {
-                hasRate++;
-              } else {
-                hasNoRate++;
-              }
-            }
-            break;
+              break;
+          }
         }
 
+        if (externalRate > 0) {
+          hasRate++;
+        } else {
+          hasNoRate++;
+        }
       }
     }
-
     if (!Double.isNaN(amountRate / totalAmounts)) {
       this.weightedRate = amountRate / totalAmounts;
       double weightedRateWithDiscount = this.weightedRate * (1 - this.discountWeightedRate);
@@ -721,8 +716,7 @@ public class FlexibleConsolidations {
       // STATUS: ERROR DE CALCULO
       return;
     }
-
-    if (this.weightedRate >= getConsolidationOffer().getRate()) {
+    if (this.weightedRate >= getConsolidationOffer().getRate() || this.weightedRate <= 0) {
       setOriginalRateToOfferRate();
       updateOfferRateOnBuroDebts();
       return;
@@ -828,7 +822,21 @@ public class FlexibleConsolidations {
 
     this.totalSavingMissingDebts = GenericUtilities.round(totalSavingAllDebts - totalSaving);
     this.monthlySavingsMissingDebts = GenericUtilities.round(monthlySavingAllDebts - monthlySaving);
-    // this.benefitType
+  }
+
+  private double getSuggestedPayment() {
+    if (monthlyKuboPayment <= monthlyExternalPayment) {
+      return monthlyKuboPayment;
+    }
+
+    if (monthlyExternalPayment <= monthlyKuboPayment
+        && monthlyExternalPayment >= getConsolidationOffer().getMinPayment()
+        && monthlyExternalPayment <= getConsolidationOffer().getMaxPayment()) {
+
+      return monthlyExternalPayment;
+    }
+
+    return monthlyKuboPayment;
   }
 
   /*
