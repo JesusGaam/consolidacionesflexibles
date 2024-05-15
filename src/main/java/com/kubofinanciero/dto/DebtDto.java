@@ -119,7 +119,7 @@ public class DebtDto {
   }
 
   private void debtInitValidation() {
-    if (canBeSelected() && typeDebt == 'I' && externalRate > 0 && externalRate < 1) {
+    if (canBeSelected() && typeDebt == 'I' && externalRate > 0 && externalRate < 0.01) {
       externalRate = -1;
       monthlyKuboPayment = 0;
       monthlySaving = 0;
