@@ -85,14 +85,15 @@ public class FlexibleConsolidations {
 
   private double discountWeightedRate;
   private double minimumRateOffer;
+  private double globalMaxAmount;
 
-  public FlexibleConsolidations(
-      ConsolidationOfferDto consolidationOffer) {
+  public FlexibleConsolidations(ConsolidationOfferDto consolidationOffer) {
     setConsolidationOffer(consolidationOffer);
     setSimulatorOffer(this.consolidationOffer);
 
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
+    this.globalMaxAmount = 0;
     this.includeCommissionInOfferAmount = true;
   }
 
@@ -128,18 +129,21 @@ public class FlexibleConsolidations {
     this.offerKuboScore = "";
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
+    this.globalMaxAmount = 0;
     this.includeCommissionInOfferAmount = true;
   }
 
   public FlexibleConsolidations(
       ConsolidationOfferDto consolidationOffer,
       double discountWeightedRate,
-      double minimumRateOffer) {
+      double minimumRateOffer,
+      double globalMaxAmount) {
     setConsolidationOffer(consolidationOffer);
     setSimulatorOffer(this.consolidationOffer);
 
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
+    this.globalMaxAmount = globalMaxAmount;
     this.includeCommissionInOfferAmount = true;
   }
 
@@ -159,7 +163,8 @@ public class FlexibleConsolidations {
       SimulatorOfferDto simulatorOffer,
       ConsolidationOfferDto consolidationOffer,
       double discountWeightedRate,
-      double minimumRateOffer) {
+      double minimumRateOffer,
+      double globalMaxAmount) {
     this.offerAmount = offerAmount;
     this.offerRate = offerRate;
     this.offerKuboScore = offerKuboScore;
@@ -177,6 +182,7 @@ public class FlexibleConsolidations {
 
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
+    this.globalMaxAmount = globalMaxAmount;
     this.includeCommissionInOfferAmount = true;
   }
 
@@ -305,6 +311,10 @@ public class FlexibleConsolidations {
     }
 
     return consolidationOffer;
+  }
+
+  public double getGlobalMaxAmount() {
+    return globalMaxAmount;
   }
 
   /*
@@ -479,6 +489,14 @@ public class FlexibleConsolidations {
 
   public void setDiscountWeightedRate(double discountWeightedRate) {
     this.discountWeightedRate = discountWeightedRate;
+  }
+
+  public void setGlobalMaxAmount(double globalMaxAmount) {
+    if (globalMaxAmount <= 0) {
+      this.globalMaxAmount = 0;
+    }
+
+    this.globalMaxAmount = globalMaxAmount;
   }
 
   public void updateCatSimulation(int suggestedPaymentTerm, char frequency) {
@@ -876,12 +894,10 @@ public class FlexibleConsolidations {
   }
 
   private void validExceededAmount() {
-
     double maxAmount = getConsolidationOffer().getMaxAmount();
-    double globalMaxAmount = getConsolidationOffer().getGlobalMaxAmount();
 
-    if (globalMaxAmount > 0 && globalMaxAmount < maxAmount) {
-      maxAmount = globalMaxAmount;
+    if (getGlobalMaxAmount() > 0 && getGlobalMaxAmount() < maxAmount) {
+      maxAmount = getGlobalMaxAmount();
     }
 
     if (this.offerAmount > maxAmount) {
