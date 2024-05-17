@@ -119,7 +119,7 @@ public class DebtDto {
   }
 
   private void debtInitValidation() {
-    if (canBeSelected() && typeDebt == 'I' && externalRate > 0 && externalRate < 1) {
+    if (canBeSelected() && typeDebt == 'I' && externalRate > 0 && externalRate < 0.01) {
       externalRate = -1;
       monthlyKuboPayment = 0;
       monthlySaving = 0;
@@ -522,8 +522,10 @@ public class DebtDto {
       calculateRevolverPaymentTerms();
     }
 
-    if (getExternalFrequency() == 'V' || getExternalFrequency() == 'P' || amount <= 0
-        || getAwardedPaymentTerms() <= 0 || getPayment() <= 0) {
+    if (getExternalFrequency() == 'V' || getExternalFrequency() == 'P'
+        || amount <= 0 || getAwardedPaymentTerms() <= 0 || getPayment() <= 0
+        || (this.typeDebt == 'R' && this.revolverType.equals(REVOLVER_TRANSACTOR_TYPE))) {
+
       this.monthlyKuboPayment = 0;
       this.monthlySaving = 0;
       this.totalSaving = 0;
@@ -571,7 +573,7 @@ public class DebtDto {
 
   }
 
-  private double convertToMonthlyPayment(double saving) {
+  public double convertToMonthlyPayment(double saving) {
     switch (this.externalFrequency) {
       case 'W':
         return saving * 4;

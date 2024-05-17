@@ -25,7 +25,7 @@ import com.kubofinanciero.utils.LoanSimulator;
  *  monthlySavingsMissingDebts: Ahorro mensual, obtenida de las deudas NO seleccionadas
  *  totalAmountSelectedDebts: Es el monto total de las deudas seleccionadas
  *  totalAmountToConsolidate: Es el monto total a recibir, se calcula restandole la comision al monto de oferta
- *  totalAmountToReceive: Es el monto total de las deudas consolidables sin importar que esten seleccionadas o no.
+ *  totalAmountToReceive: Es el monto total a recibir despues de descontar las comisiones
  *  excedentAmount : El Colchoncito es lo que le sobrara despues de pagar todas sus deudas. Se calcula restando el saldo del monto otorgado,
  *  consolidableMissingAmount: Monto restante para consolidar, es el monto a consolidar de las deudas no seleccionadas. 
  *  monthlyExternalPayment: Es lo que el cliente esta pagando mensualmente de sus deudas seleccionadas
@@ -85,14 +85,15 @@ public class FlexibleConsolidations {
 
   private double discountWeightedRate;
   private double minimumRateOffer;
+  private double globalMaxAmount;
 
-  public FlexibleConsolidations(
-      ConsolidationOfferDto consolidationOffer) {
+  public FlexibleConsolidations(ConsolidationOfferDto consolidationOffer) {
     setConsolidationOffer(consolidationOffer);
     setSimulatorOffer(this.consolidationOffer);
 
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
+    this.globalMaxAmount = 0;
     this.includeCommissionInOfferAmount = true;
   }
 
@@ -128,18 +129,21 @@ public class FlexibleConsolidations {
     this.offerKuboScore = "";
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
+    this.globalMaxAmount = 0;
     this.includeCommissionInOfferAmount = true;
   }
 
   public FlexibleConsolidations(
       ConsolidationOfferDto consolidationOffer,
       double discountWeightedRate,
-      double minimumRateOffer) {
+      double minimumRateOffer,
+      double globalMaxAmount) {
     setConsolidationOffer(consolidationOffer);
     setSimulatorOffer(this.consolidationOffer);
 
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
+    this.globalMaxAmount = globalMaxAmount;
     this.includeCommissionInOfferAmount = true;
   }
 
@@ -159,7 +163,8 @@ public class FlexibleConsolidations {
       SimulatorOfferDto simulatorOffer,
       ConsolidationOfferDto consolidationOffer,
       double discountWeightedRate,
-      double minimumRateOffer) {
+      double minimumRateOffer,
+      double globalMaxAmount) {
     this.offerAmount = offerAmount;
     this.offerRate = offerRate;
     this.offerKuboScore = offerKuboScore;
@@ -177,6 +182,7 @@ public class FlexibleConsolidations {
 
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
+    this.globalMaxAmount = globalMaxAmount;
     this.includeCommissionInOfferAmount = true;
   }
 
@@ -305,6 +311,10 @@ public class FlexibleConsolidations {
     }
 
     return consolidationOffer;
+  }
+
+  public double getGlobalMaxAmount() {
+    return globalMaxAmount;
   }
 
   /*
@@ -481,6 +491,14 @@ public class FlexibleConsolidations {
     this.discountWeightedRate = discountWeightedRate;
   }
 
+  public void setGlobalMaxAmount(double globalMaxAmount) {
+    if (globalMaxAmount <= 0) {
+      this.globalMaxAmount = 0;
+    }
+
+    this.globalMaxAmount = globalMaxAmount;
+  }
+
   public void updateCatSimulation(int suggestedPaymentTerm, char frequency) {
     getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
     catSimulation = new CatSimulation(getSuggestedPayment(), suggestedPaymentTerm, frequency, getSimulatorOffer(),
@@ -576,33 +594,6 @@ public class FlexibleConsolidations {
     this.maxDebtsRate = maxDebtsRate;
   }
 
-  /*
-   * Se encarga de calcular el monto de oferta de forma automatica, tomando como
-   * referencia las deudas seleccionadas.
-   */
-  public void calculateOfferAmount() {
-    double offerAmount = 0;
-    for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
-      if (debt.isSelected()) {
-        double balance = debt.getBalance() > 0 ? debt.getBalance() : 0;
-        double amountAwarded = debt.getAmountAwarded() > 0 ? debt.getAmountAwarded() : 0;
-
-        if (debt.getTypeDebt() == 'R') {
-          offerAmount += balance;
-        } else {
-          offerAmount += amountAwarded;
-        }
-      }
-    }
-    this.offerAmount = GenericUtilities.round(offerAmount);
-    this.offerCommissionAmount = GenericUtilities
-        .round(LoanSimulator.cashCommission(this.offerAmount, getOfferCommission(), true));
-
-    if (this.offerAmount > getConsolidationOffer().getMaxAmount()) {
-      this.offerStatus = STATUS_EXCEEDED_AMOUNT;
-    }
-  }
-
   public void addCommissionToOfferAmount(boolean includeCommision) {
     this.includeCommissionInOfferAmount = includeCommision;
   }
@@ -635,7 +626,6 @@ public class FlexibleConsolidations {
               break;
 
             case 'R':
-              System.out.println(debt);
               if (externalRate > 0 && debt.getBalance() > 0) {
                 amountRate += debt.getBalance() * getRateForWeighing(debt);
                 totalAmounts += debt.getBalance();
@@ -864,7 +854,7 @@ public class FlexibleConsolidations {
       if (debt.isSelected()) {
 
         totalSaving += debt.getTotalSaving();
-        monthlyExternalPayment += debt.getPayment();
+        monthlyExternalPayment += debt.convertToMonthlyPayment(debt.getPayment());
         monthlyKuboPayment += debt.getMonthlyKuboPayment();
 
         double balance = debt.getBalance() > 0 ? debt.getBalance() : 0;
@@ -876,7 +866,7 @@ public class FlexibleConsolidations {
           totalAmountSelectedDebts += amountAwarded;
         }
 
-        if (debt.getTypeDebt() != 'R'
+        if (debt.getTypeDebt() == 'I'
             && debt.getAmountAwarded() > debt.getBalance()) {
           excedentAmount += debt.getAmountAwarded() - debt.getBalance();
         }
@@ -897,41 +887,22 @@ public class FlexibleConsolidations {
       this.offerAmount = totalAmountSelectedDebts;
     }
 
+    validExceededAmount();
     this.offerCommissionAmount = GenericUtilities
         .round(LoanSimulator.cashCommission(this.offerAmount, getOfferCommission(), true));
     this.totalAmountToReceive = GenericUtilities.round(this.offerAmount - this.offerCommissionAmount);
-
-    if (this.totalAmountSelectedDebts > getConsolidationOffer().getMaxAmount()) {
-      this.offerStatus = STATUS_EXCEEDED_AMOUNT;
-    }
   }
 
-  private int calculateAvgPaymentTerm() {
-    int nPaymentTerm = 0;
-    int avgPaymentTerm = 0;
-    int minPaymentTerm = getConsolidationOffer().getMinPaymentTerm();
-    int maxPaymentTerm = getConsolidationOffer().getMaxPaymentTerm();
+  private void validExceededAmount() {
+    double maxAmount = getConsolidationOffer().getMaxAmount();
 
-    for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
-      if (debt.canBeSelected() && debt.getTypeDebt() == 'I') {
-        nPaymentTerm++;
-        avgPaymentTerm += debt.getMonthlyPaymentTerm();
-      }
+    if (getGlobalMaxAmount() > 0 && getGlobalMaxAmount() < maxAmount) {
+      maxAmount = getGlobalMaxAmount();
     }
 
-    if (avgPaymentTerm == 0 || nPaymentTerm == 0) {
-      return 0;
+    if (this.offerAmount > maxAmount) {
+      this.offerStatus = STATUS_EXCEEDED_AMOUNT;
     }
-
-    avgPaymentTerm = (int) Math.ceil(avgPaymentTerm / nPaymentTerm);
-
-    if (avgPaymentTerm > maxPaymentTerm) {
-      avgPaymentTerm = maxPaymentTerm;
-    } else if (avgPaymentTerm < minPaymentTerm) {
-      avgPaymentTerm = minPaymentTerm;
-    }
-
-    return avgPaymentTerm;
   }
 
   /**
