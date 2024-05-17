@@ -17,6 +17,7 @@ public class ConsolidationOfferDto {
   private double maxPayment;
   private double minAmount;
   private double maxAmount;
+  private double globalMaxAmount;
   private int minPaymentTerm;
   private int maxPaymentTerm;
   private double rate;
@@ -125,6 +126,7 @@ public class ConsolidationOfferDto {
     this.prospectusId = prospectusId;
     this.bursolnum = bursolnum;
     this.maxClientAmount = maxClientAmount;
+    this.globalMaxAmount = maxAmount;
 
     addPaymentTermToBuroDebts();
   }
@@ -157,6 +159,10 @@ public class ConsolidationOfferDto {
 
   public double getMaxAmount() {
     return maxAmount;
+  }
+
+  public double getGlobalMaxAmount() {
+    return globalMaxAmount;
   }
 
   public int getMinPaymentTerm() {
@@ -260,6 +266,16 @@ public class ConsolidationOfferDto {
 
   public ConsolidationOfferDto setMaxAmount(double maxAmount) {
     this.maxAmount = maxAmount;
+    return this;
+  }
+
+  public ConsolidationOfferDto setGlobalMaxAmount(double globalMaxAmount) {
+    if (globalMaxAmount <= 0) {
+      this.globalMaxAmount = 0;
+      return this;
+    }
+
+    this.globalMaxAmount = globalMaxAmount;
     return this;
   }
 
