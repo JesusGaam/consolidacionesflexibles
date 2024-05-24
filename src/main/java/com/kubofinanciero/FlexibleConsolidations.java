@@ -50,8 +50,6 @@ public class FlexibleConsolidations {
   public static final int WEIGHTED_RATE_TYPE_KNOWN = 1;
   public static final int WEIGHTED_RATE_TYPE_UNKNOWN = 2;
 
-  public static final int EXTENDED_PAYMENT_TERM = 6;
-
   private double offerAmount;
   private double offerRate;
   private String offerKuboScore;
@@ -86,6 +84,7 @@ public class FlexibleConsolidations {
   private double discountWeightedRate;
   private double minimumRateOffer;
   private double globalMaxAmount;
+  private int extendedPaymentTerm;
 
   public FlexibleConsolidations(ConsolidationOfferDto consolidationOffer) {
     setConsolidationOffer(consolidationOffer);
@@ -94,6 +93,7 @@ public class FlexibleConsolidations {
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
     this.globalMaxAmount = 0;
+    this.extendedPaymentTerm = 0;
     this.includeCommissionInOfferAmount = true;
   }
 
@@ -130,6 +130,7 @@ public class FlexibleConsolidations {
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
     this.globalMaxAmount = 0;
+    this.extendedPaymentTerm = 0;
     this.includeCommissionInOfferAmount = true;
   }
 
@@ -137,13 +138,15 @@ public class FlexibleConsolidations {
       ConsolidationOfferDto consolidationOffer,
       double discountWeightedRate,
       double minimumRateOffer,
-      double globalMaxAmount) {
+      double globalMaxAmount,
+      int extendedPaymentTerm) {
     setConsolidationOffer(consolidationOffer);
     setSimulatorOffer(this.consolidationOffer);
 
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
     this.globalMaxAmount = globalMaxAmount;
+    this.extendedPaymentTerm = extendedPaymentTerm;
     this.includeCommissionInOfferAmount = true;
   }
 
@@ -164,7 +167,8 @@ public class FlexibleConsolidations {
       ConsolidationOfferDto consolidationOffer,
       double discountWeightedRate,
       double minimumRateOffer,
-      double globalMaxAmount) {
+      double globalMaxAmount,
+      int extendedPaymentTerm) {
     this.offerAmount = offerAmount;
     this.offerRate = offerRate;
     this.offerKuboScore = offerKuboScore;
@@ -183,6 +187,7 @@ public class FlexibleConsolidations {
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
     this.globalMaxAmount = globalMaxAmount;
+    this.extendedPaymentTerm = extendedPaymentTerm;
     this.includeCommissionInOfferAmount = true;
   }
 
@@ -315,6 +320,10 @@ public class FlexibleConsolidations {
 
   public double getGlobalMaxAmount() {
     return globalMaxAmount;
+  }
+
+  public double getExtendedPaymentTerm() {
+    return extendedPaymentTerm;
   }
 
   /*
@@ -499,10 +508,18 @@ public class FlexibleConsolidations {
     this.globalMaxAmount = globalMaxAmount;
   }
 
+  public void setExtendedPaymentTerm(int extendedPaymentTerm) {
+    if (extendedPaymentTerm <= 0) {
+      this.extendedPaymentTerm = 0;
+    }
+
+    this.extendedPaymentTerm = extendedPaymentTerm;
+  }
+
   public void updateCatSimulation(int suggestedPaymentTerm, char frequency) {
     getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
     catSimulation = new CatSimulation(getSuggestedPayment(), suggestedPaymentTerm, frequency, getSimulatorOffer(),
-        EXTENDED_PAYMENT_TERM);
+        extendedPaymentTerm);
     getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
   }
 
@@ -542,7 +559,7 @@ public class FlexibleConsolidations {
     getSimulatorOffer().setCommissionRate(this.offerCommission);
     getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
 
-    catSimulation = new CatSimulation(getSuggestedPayment(), getSimulatorOffer(), EXTENDED_PAYMENT_TERM);
+    catSimulation = new CatSimulation(getSuggestedPayment(), getSimulatorOffer(), extendedPaymentTerm);
     getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
   }
 
