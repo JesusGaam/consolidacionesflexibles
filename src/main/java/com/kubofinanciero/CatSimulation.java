@@ -287,7 +287,7 @@ public class CatSimulation {
       this.commissionAmount = 0;
       return;
     }
-    this.commissionAmount = LoanSimulator.cashCommission(amount, commissionRate, true);
+    this.commissionAmount = LoanSimulator.cashCommission(amount, commissionRate, false);
   }
 
   private void validatePaymentTerm() {
@@ -321,7 +321,7 @@ public class CatSimulation {
       commissionRate = 0;
     }
 
-    double cashCommission = LoanSimulator.cashCommission(amount, commissionRate, false);
+    double cashCommission = LoanSimulator.cashCommission(amount, commissionRate / 1.16, false);
     double ratefrequency = LoanSimulator.rateFrequency(rate, frequency, false);
     double paymentCat = LoanSimulator.payment(amount, paymentTerm, ratefrequency);
     int periodsPerYear = LoanSimulator.getFrequency(frequency).getPeriodsPerYearForCat();
