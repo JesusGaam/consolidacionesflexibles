@@ -356,7 +356,7 @@ public class FlexibleConsolidations {
         this.offerCommission = comissions[i];
         this.offerKuboScore = kuboScores[i];
         this.offerCommissionAmount = GenericUtilities
-            .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), true));
+            .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), false));
         updateOfferRateOnBuroDebts();
 
         this.offerStatus = STATUS_RATE_MODIFIED_BY_ADVISOR;
@@ -395,7 +395,7 @@ public class FlexibleConsolidations {
         this.offerCommission = comissions[i];
         this.offerKuboScore = kuboScores[i];
         this.offerCommissionAmount = GenericUtilities
-            .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), true));
+            .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), false));
         updateOfferRateOnBuroDebts();
 
         this.offerStatus = STATUS_RATE_MODIFIED_BY_ADVISOR;
@@ -435,7 +435,7 @@ public class FlexibleConsolidations {
         this.offerCommission = comissions[i];
         this.offerKuboScore = kuboScores[i];
         this.offerCommissionAmount = GenericUtilities
-            .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), true));
+            .round(LoanSimulator.cashCommission(comissions[i], getOfferAmount(), false));
 
         updateOfferRateOnBuroDebts();
 
@@ -626,29 +626,35 @@ public class FlexibleConsolidations {
     int totalRates = 0;
     int hasRate = 0;
     int hasNoRate = 0;
+    boolean doWeighing = false;
 
     for (DebtDto debt : getConsolidationOffer().getBuroDebts()) {
 
       if (debt.getConsolidatedDebt()) {
         totalRates++;
         double externalRate = debt.getExternalRate();
+        double rateForWeighing = getRateForWeighing(debt);
 
         if (debt.isSelected()) {
           switch (debt.getTypeDebt()) {
             case 'I':
               if (externalRate > 0 && debt.getAmountAwarded() > 0) {
-                amountRate += debt.getAmountAwarded() * getRateForWeighing(debt);
+                amountRate += debt.getAmountAwarded() * rateForWeighing;
                 totalAmounts += debt.getAmountAwarded();
               }
               break;
 
             case 'R':
               if (externalRate > 0 && debt.getBalance() > 0) {
-                amountRate += debt.getBalance() * getRateForWeighing(debt);
+                amountRate += debt.getBalance() * rateForWeighing;
                 totalAmounts += debt.getBalance();
               }
               break;
           }
+        }
+
+        if (!doWeighing && rateForWeighing != getConsolidationOffer().getRate()) {
+          doWeighing = true;
         }
 
         if (externalRate > 0) {
@@ -658,7 +664,8 @@ public class FlexibleConsolidations {
         }
       }
     }
-    if (!Double.isNaN(amountRate / totalAmounts)) {
+
+    if (!Double.isNaN(amountRate / totalAmounts) && doWeighing) {
       this.weightedRate = amountRate / totalAmounts;
       double weightedRateWithDiscount = this.weightedRate * (1 - this.discountWeightedRate);
 
@@ -752,7 +759,7 @@ public class FlexibleConsolidations {
       this.offerCommission = commissionsList[positionRate];
       this.offerKuboScore = kuboScores[positionRate];
       this.offerCommissionAmount = GenericUtilities
-          .round(LoanSimulator.cashCommission(commissionsList[positionRate], getOfferAmount(), true));
+          .round(LoanSimulator.cashCommission(commissionsList[positionRate], getOfferAmount(), false));
     } else {
       this.offerCommission = 0;
       this.offerCommissionAmount = 0;
@@ -898,15 +905,15 @@ public class FlexibleConsolidations {
     this.consolidableMissingAmount = GenericUtilities.round(totalAmountToConsolidate - this.totalAmountSelectedDebts);
 
     if (includeCommissionInOfferAmount) {
-      this.offerAmount = GenericUtilities.round(LoanSimulator.addCommissionToAmount(totalAmountSelectedDebts,
-          getOfferCommission(), true));
+      this.offerAmount = GenericUtilities.round(
+          LoanSimulator.addCommissionToAmount(totalAmountSelectedDebts, getOfferCommission(), false));
     } else {
       this.offerAmount = totalAmountSelectedDebts;
     }
 
     validExceededAmount();
-    this.offerCommissionAmount = GenericUtilities
-        .round(LoanSimulator.cashCommission(this.offerAmount, getOfferCommission(), true));
+    this.offerCommissionAmount = GenericUtilities.round(
+        LoanSimulator.cashCommission(this.offerAmount, getOfferCommission(), false));
     this.totalAmountToReceive = GenericUtilities.round(this.offerAmount - this.offerCommissionAmount);
   }
 
