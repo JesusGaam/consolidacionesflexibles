@@ -28,6 +28,8 @@ public class CatSimulation {
   private int extendedPaymentTerm;
   private double ratefrequency;
 
+  private final int MAX_PAYMENT_TERM = 60;
+
   public CatSimulation() {
     frequency = 'M';
   }
@@ -38,9 +40,9 @@ public class CatSimulation {
     this.rate = simulatorOffer.getRate();
     this.commissionRate = simulatorOffer.getCommissionRate();
     this.suggestedPayment = suggestedPayment;
-    this.extendedPaymentTerm = extendedPaymentTerm;
 
     getCalculationDate();
+    validateExtendedPaymentTerm(extendedPaymentTerm);
     defineFrequency(frequency);
     validateSuggestedPayment();
     updatePaymentTerms();
@@ -63,9 +65,9 @@ public class CatSimulation {
     this.commissionRate = simulatorOffer.getCommissionRate();
     this.suggestedPayment = suggestedPayment;
     this.suggestedPaymentTerm = suggestedPaymentTerm;
-    this.extendedPaymentTerm = extendedPaymentTerm;
 
     getCalculationDate();
+    validateExtendedPaymentTerm(extendedPaymentTerm);
     defineFrequency(frequency);
     validateSuggestedPayment();
     updatePaymentTerms();
@@ -73,6 +75,20 @@ public class CatSimulation {
     findPayment();
     findCommissionAmount();
     findCat();
+  }
+
+  private void validateExtendedPaymentTerm(int extendedPaymentTerm) {
+    if (extendedPaymentTerm <= 0) {
+      this.extendedPaymentTerm = 0;
+      return;
+    }
+
+    int finalPaymentTerm = simulatorOffer.getMaxPaymentTerm() + extendedPaymentTerm;
+    if (finalPaymentTerm > MAX_PAYMENT_TERM) {
+      this.extendedPaymentTerm = extendedPaymentTerm - (finalPaymentTerm - MAX_PAYMENT_TERM);
+    } else {
+      this.extendedPaymentTerm = extendedPaymentTerm;
+    }
   }
 
   private void defineFrequency(char frequency) {
