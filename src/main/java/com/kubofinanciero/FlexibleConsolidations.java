@@ -334,10 +334,6 @@ public class FlexibleConsolidations {
    * pueden agregar tasas que estan dentro de la lista de asistidas.
    */
   public void setOfferRate(double offerRate) {
-    if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
-      return;
-    }
-
     if (offerRate == getConsolidationOffer().getRate()) {
       setOriginalRateToOfferRate();
       updateOfferRateOnBuroDebts();
@@ -346,6 +342,10 @@ public class FlexibleConsolidations {
       return;
     }
 
+    if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
+      return;
+    }
+    
     double[] rates = getConsolidationOffer().getAssistedRates();
     double[] comissions = getConsolidationOffer().getCommissionRateList();
     String[] kuboScores = getConsolidationOffer().getKuboScores();

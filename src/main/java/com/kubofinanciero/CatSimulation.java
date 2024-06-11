@@ -29,6 +29,7 @@ public class CatSimulation {
   private double ratefrequency;
 
   private final int MAX_PAYMENT_TERM = 60;
+  private final int MIN_AMOUNT = 5000;
 
   public CatSimulation() {
     frequency = 'M';
@@ -181,6 +182,10 @@ public class CatSimulation {
     return cat;
   }
 
+  public boolean validAmount() {
+    return amount <= 0 || amount < MIN_AMOUNT;
+  }
+
   public String getCalculationDate() {
     if (calculationDate == null) {
       calculationDate = GenericUtilities.toStringDate(new Date());
@@ -288,8 +293,7 @@ public class CatSimulation {
   }
 
   private void findPaymentTerm() {
-
-    if (amount <= 0 || suggestedPayment <= 0) {
+    if (validAmount() || suggestedPayment <= 0) {
       paymentTerm = 0;
       return;
     }
@@ -318,7 +322,7 @@ public class CatSimulation {
   }
 
   private void findPayment() {
-    if (amount <= 0 || paymentTerm <= 0) {
+    if (validAmount() || paymentTerm <= 0) {
       payment = 0;
       return;
     }
@@ -328,7 +332,7 @@ public class CatSimulation {
   }
 
   private void findCat() {
-    if (amount <= 0 || paymentTerm <= 0) {
+    if (validAmount() || paymentTerm <= 0) {
       cat = 0;
       return;
     }
