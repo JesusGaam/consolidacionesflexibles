@@ -620,6 +620,8 @@ public class FlexibleConsolidations {
    * deudas seleccionadas.
    */
   public void calculateWeightedRate() {
+    this.weightedRate = 0;
+
     double amountRate = 0;
     double totalAmounts = 0;
 
