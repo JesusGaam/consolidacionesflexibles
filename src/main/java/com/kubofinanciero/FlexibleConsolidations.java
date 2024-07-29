@@ -647,6 +647,7 @@ public class FlexibleConsolidations {
               break;
 
             case 'R':
+            case 'O':
               if (externalRate > 0 && debt.getBalance() > 0) {
                 amountRate += debt.getBalance() * rateForWeighing;
                 totalAmounts += debt.getBalance();
@@ -808,8 +809,8 @@ public class FlexibleConsolidations {
       if (!debt.getConsolidatedDebt()) {
         continue;
       }
-
-      if (debt.getTypeDebt() == 'R' && !debt.canBeSelected()) {
+      
+      if (debt.isRevolverCreditCard() && !debt.canBeSelected()) {
         continue;
       }
 
@@ -872,6 +873,7 @@ public class FlexibleConsolidations {
             totalAmountToConsolidate += debt.getAmountAwarded();
             break;
           case 'R':
+          case 'O':
             totalAmountToConsolidate += debt.getBalance();
             break;
         }
@@ -886,15 +888,18 @@ public class FlexibleConsolidations {
         double balance = debt.getBalance() > 0 ? debt.getBalance() : 0;
         double amountAwarded = debt.getAmountAwarded() > 0 ? debt.getAmountAwarded() : 0;
 
-        if (debt.getTypeDebt() == 'R') {
-          totalAmountSelectedDebts += balance;
-        } else {
-          totalAmountSelectedDebts += amountAwarded;
-        }
+        switch (debt.getTypeDebt()) {
+          case 'I':
+            totalAmountSelectedDebts += amountAwarded;
 
-        if (debt.getTypeDebt() == 'I'
-            && debt.getAmountAwarded() > debt.getBalance()) {
-          excedentAmount += debt.getAmountAwarded() - debt.getBalance();
+            if (debt.getAmountAwarded() > debt.getBalance()) {
+              excedentAmount += debt.getAmountAwarded() - debt.getBalance();
+            }
+            break;
+          case 'R':
+          case 'O':
+            totalAmountSelectedDebts += balance;
+            break;
         }
       }
     }
