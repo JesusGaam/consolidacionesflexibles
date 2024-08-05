@@ -83,6 +83,7 @@ public class FlexibleConsolidations {
 
   private double discountWeightedRate;
   private double minimumRateOffer;
+  private double globalMinAmount;
   private double globalMaxAmount;
   private int extendedPaymentTerm;
 
@@ -92,6 +93,7 @@ public class FlexibleConsolidations {
 
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
+    this.globalMinAmount = 0;
     this.globalMaxAmount = 0;
     this.extendedPaymentTerm = 0;
     this.includeCommissionInOfferAmount = true;
@@ -129,6 +131,7 @@ public class FlexibleConsolidations {
     this.offerKuboScore = "";
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
+    this.globalMinAmount = 0;
     this.globalMaxAmount = 0;
     this.extendedPaymentTerm = 0;
     this.includeCommissionInOfferAmount = true;
@@ -138,6 +141,7 @@ public class FlexibleConsolidations {
       ConsolidationOfferDto consolidationOffer,
       double discountWeightedRate,
       double minimumRateOffer,
+      double globalMinAmount,
       double globalMaxAmount,
       int extendedPaymentTerm) {
     setConsolidationOffer(consolidationOffer);
@@ -145,6 +149,7 @@ public class FlexibleConsolidations {
 
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
+    this.globalMinAmount = globalMinAmount;
     this.globalMaxAmount = globalMaxAmount;
     this.extendedPaymentTerm = extendedPaymentTerm;
     this.includeCommissionInOfferAmount = true;
@@ -167,6 +172,7 @@ public class FlexibleConsolidations {
       ConsolidationOfferDto consolidationOffer,
       double discountWeightedRate,
       double minimumRateOffer,
+      double globalMinAmount,
       double globalMaxAmount,
       int extendedPaymentTerm) {
     this.offerAmount = offerAmount;
@@ -186,6 +192,7 @@ public class FlexibleConsolidations {
 
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
+    this.globalMinAmount = globalMinAmount;
     this.globalMaxAmount = globalMaxAmount;
     this.extendedPaymentTerm = extendedPaymentTerm;
     this.includeCommissionInOfferAmount = true;
@@ -318,6 +325,10 @@ public class FlexibleConsolidations {
     return consolidationOffer;
   }
 
+  public double getGlobalMinAmount() {
+    return globalMinAmount;
+  }
+
   public double getGlobalMaxAmount() {
     return globalMaxAmount;
   }
@@ -345,7 +356,7 @@ public class FlexibleConsolidations {
     if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
       return;
     }
-    
+
     double[] rates = getConsolidationOffer().getAssistedRates();
     double[] comissions = getConsolidationOffer().getCommissionRateList();
     String[] kuboScores = getConsolidationOffer().getKuboScores();
@@ -500,6 +511,14 @@ public class FlexibleConsolidations {
     this.discountWeightedRate = discountWeightedRate;
   }
 
+  public void setGlobalMinAmount(double globalMinAmount) {
+    if (globalMinAmount <= 0) {
+      this.globalMinAmount = 0;
+    }
+
+    this.globalMinAmount = globalMinAmount;
+  }
+
   public void setGlobalMaxAmount(double globalMaxAmount) {
     if (globalMaxAmount <= 0) {
       this.globalMaxAmount = 0;
@@ -518,8 +537,13 @@ public class FlexibleConsolidations {
 
   public void updateCatSimulation(int suggestedPaymentTerm, char frequency) {
     getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
-    catSimulation = new CatSimulation(getSuggestedPayment(), suggestedPaymentTerm, frequency, getSimulatorOffer(),
-        extendedPaymentTerm);
+    catSimulation = new CatSimulation(
+        getSuggestedPayment(),
+        suggestedPaymentTerm,
+        frequency,
+        getSimulatorOffer(),
+        extendedPaymentTerm,
+        getGlobalMinAmount());
     getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
   }
 
@@ -559,7 +583,11 @@ public class FlexibleConsolidations {
     getSimulatorOffer().setCommissionRate(this.offerCommission);
     getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
 
-    catSimulation = new CatSimulation(getSuggestedPayment(), getSimulatorOffer(), extendedPaymentTerm);
+    catSimulation = new CatSimulation(
+        getSuggestedPayment(),
+        getSimulatorOffer(),
+        extendedPaymentTerm,
+        getGlobalMinAmount());
     getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
   }
 
