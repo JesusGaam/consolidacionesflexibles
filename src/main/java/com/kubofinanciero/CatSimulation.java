@@ -27,20 +27,24 @@ public class CatSimulation {
   private SimulatorOfferDto simulatorOffer;
   private int extendedPaymentTerm;
   private double ratefrequency;
+  private double globalMinAmount;
+
+  private final int MAX_PAYMENT_TERM = 60;
 
   public CatSimulation() {
     frequency = 'M';
   }
 
-  public CatSimulation(double suggestedPayment, SimulatorOfferDto simulatorOffer, int extendedPaymentTerm) {
+  public CatSimulation(double suggestedPayment, SimulatorOfferDto simulatorOffer, int extendedPaymentTerm, double globalMinAmount) {
     this.simulatorOffer = simulatorOffer;
     this.amount = simulatorOffer.getMaxAmount();
     this.rate = simulatorOffer.getRate();
     this.commissionRate = simulatorOffer.getCommissionRate();
     this.suggestedPayment = suggestedPayment;
-    this.extendedPaymentTerm = extendedPaymentTerm;
+    this.globalMinAmount = globalMinAmount;
 
     getCalculationDate();
+    validateExtendedPaymentTerm(extendedPaymentTerm);
     defineFrequency(frequency);
     validateSuggestedPayment();
     updatePaymentTerms();
@@ -55,7 +59,8 @@ public class CatSimulation {
       int suggestedPaymentTerm,
       char frequency,
       SimulatorOfferDto simulatorOffer,
-      int extendedPaymentTerm) {
+      int extendedPaymentTerm, 
+      double globalMinAmount) {
 
     this.simulatorOffer = simulatorOffer;
     this.amount = simulatorOffer.getMaxAmount();
@@ -63,9 +68,10 @@ public class CatSimulation {
     this.commissionRate = simulatorOffer.getCommissionRate();
     this.suggestedPayment = suggestedPayment;
     this.suggestedPaymentTerm = suggestedPaymentTerm;
-    this.extendedPaymentTerm = extendedPaymentTerm;
+    this.globalMinAmount = globalMinAmount;
 
     getCalculationDate();
+    validateExtendedPaymentTerm(extendedPaymentTerm);
     defineFrequency(frequency);
     validateSuggestedPayment();
     updatePaymentTerms();
@@ -73,6 +79,20 @@ public class CatSimulation {
     findPayment();
     findCommissionAmount();
     findCat();
+  }
+
+  private void validateExtendedPaymentTerm(int extendedPaymentTerm) {
+    if (extendedPaymentTerm <= 0) {
+      this.extendedPaymentTerm = 0;
+      return;
+    }
+
+    int finalPaymentTerm = simulatorOffer.getMaxPaymentTerm() + extendedPaymentTerm;
+    if (finalPaymentTerm > MAX_PAYMENT_TERM) {
+      this.extendedPaymentTerm = extendedPaymentTerm - (finalPaymentTerm - MAX_PAYMENT_TERM);
+    } else {
+      this.extendedPaymentTerm = extendedPaymentTerm;
+    }
   }
 
   private void defineFrequency(char frequency) {
@@ -163,6 +183,10 @@ public class CatSimulation {
 
   public double getCat() {
     return cat;
+  }
+
+  public boolean validAmount() {
+    return amount <= 0 || amount < globalMinAmount;
   }
 
   public String getCalculationDate() {
@@ -272,8 +296,7 @@ public class CatSimulation {
   }
 
   private void findPaymentTerm() {
-
-    if (amount <= 0 || suggestedPayment <= 0) {
+    if (validAmount() || suggestedPayment <= 0) {
       paymentTerm = 0;
       return;
     }
@@ -302,7 +325,7 @@ public class CatSimulation {
   }
 
   private void findPayment() {
-    if (amount <= 0 || paymentTerm <= 0) {
+    if (validAmount() || paymentTerm <= 0) {
       payment = 0;
       return;
     }
@@ -312,7 +335,7 @@ public class CatSimulation {
   }
 
   private void findCat() {
-    if (amount <= 0 || paymentTerm <= 0) {
+    if (validAmount() || paymentTerm <= 0) {
       cat = 0;
       return;
     }
@@ -361,14 +384,14 @@ public class CatSimulation {
         .setMaxPaymentTerm(14)
         .setFrequencies(new char[] { 'M', 'S', 'K', 'W' });
 
-    CatSimulation cat = new CatSimulation(6000, so, 6);
+    CatSimulation cat = new CatSimulation(6000, so, 6, 25000);
     System.out.println(cat);
 
-    CatSimulation cat2 = new CatSimulation(6000, 24, 'W', so, 6);
+    CatSimulation cat2 = new CatSimulation(6000, 24, 'W', so, 6, 25000);
     System.out.println("SIMULACION EN SEMANAS");
     System.out.println(cat2);
 
-    CatSimulation cat3 = new CatSimulation(6000, 28, 'K', so, 6);
+    CatSimulation cat3 = new CatSimulation(6000, 28, 'K', so, 6, 25000);
     System.out.println("SIMULACION EN CATORCENAS");
     System.out.println(cat3);
 

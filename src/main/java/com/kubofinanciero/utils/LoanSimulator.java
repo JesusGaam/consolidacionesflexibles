@@ -51,6 +51,13 @@ public class LoanSimulator {
     return (annualRate * ivaPercentage) / frequencyNumber;
   }
 
+  public static double annualRate(double rateFrequency, char currentFrequency, boolean iva) {
+    double ivaPercentage = iva ? 1.16 : 1;
+    double frequencyNumber = periodsPerYear(currentFrequency, false);
+
+    return GenericUtilities.round((rateFrequency / ivaPercentage) * frequencyNumber);
+  }
+
   public static double presentValue(double rateFrequency, int totalPayments, double payment) {
     return (((payment *
         ((1 - Math.pow(1 + rateFrequency, -totalPayments)) / rateFrequency)) /
@@ -97,6 +104,43 @@ public class LoanSimulator {
     // (annualRate * ivaPercentage) / frequencyNumber
 
     return amount * rateFrequency;
+  }
+
+  public static double rateOfPresentValue(double presentValue, double payment, double paymentTerm) {
+    double trialRate = 0.08;
+    double baseLine = presentValue / payment;
+
+    double maxRate = 0;
+    double maxRateRef = 0;
+    double minRate = 0;
+    double minRateRef = 0;
+
+    for (int i = 0; i < 100; i++) {
+      double comparative = (1 - Math.pow(1 + trialRate, -paymentTerm)) / trialRate;
+      double dif = (baseLine - comparative) / baseLine;
+
+      if (baseLine > comparative) {
+        maxRate = trialRate;
+        maxRateRef = comparative;
+
+        if (dif < 0.1) {
+          trialRate -= 0.001;
+        } else {
+          trialRate /= 1 + dif;
+        }
+      } else if (baseLine < comparative) {
+        minRate = trialRate;
+        minRateRef = comparative;
+      }
+
+      if (maxRate != 0 && minRate != 0) {
+        break;
+      }
+    }
+
+    // Calculo de la Interpolacion entre la tasa maxima y minima
+    double rate = minRate + ((maxRate - minRate) / (maxRateRef - minRateRef)) * (baseLine - minRateRef);  
+    return GenericUtilities.round(rate, 4);
   }
 
   public static List<AmortizationTableData> amortizationTable(
@@ -198,6 +242,15 @@ public class LoanSimulator {
     System.err.println("Amount + Commission: " + commissionAndAmount);
     System.err.println("Only Commission: " + onlyCommission);
     System.err.println("Amount - Commission: " + (commissionAndAmount - onlyCommission));
+
+
+    System.out.println("");
+    System.out.println("CALCULAR TASA DE UN CREDITO");
+    System.out.println("=====================================");
+    double estimedRate = LoanSimulator.rateOfPresentValue(126800, 579.38, 240);
+    double annualRate = LoanSimulator.annualRate(estimedRate, 'S', false);
+    System.out.println("Tasa estimada: " + estimedRate);
+    System.out.println("Tasa anual: " + annualRate);
 
   }
 }
