@@ -23,10 +23,35 @@ public class App {
         flexCons.initOffer();
 
         flexCons.getConsolidationOffer().getBuroDebts().get(1)
-                .setBalance(111000)
+                .setBalance(20000)
+                .setExternalRate(0.6193)
+                .setSelected(true)
+                .setUploadedDocuments(true);
+        flexCons.getConsolidationOffer().getBuroDebts().get(2)
+                .setBalance(20000)
+                .setPayment(2000)
+                .setExternalRate(0.13)
+                .setSelected(true)
+                .setUploadedDocuments(true);
+        flexCons.getConsolidationOffer().getBuroDebts().get(3)
+                .setBalance(20000)
+                .setPayment(2000)
                 .setExternalRate(0.6193)
                 .setSelected(true)
                 .setUploadedDocuments(false);
+        flexCons.getConsolidationOffer().getBuroDebts().get(4)
+                .setBalance(20000)
+                .setPayment(2000)
+                .setExternalRate(0.6193)
+                .setSelected(true)
+                .setUploadedDocuments(false);
+        flexCons.getConsolidationOffer().getBuroDebts().get(5)
+                .setBalance(20000)
+                .setPayment(2000)
+                .setExternalRate(0.6193)
+                .setSelected(true)
+                .setUploadedDocuments(false);
+        
 
         flexCons.updateOffer();
 
@@ -67,8 +92,8 @@ public class App {
         // flexCons.updateCatSimulation(2, 'F');
         // System.out.println(flexCons.getCatSimulation());
 
-        System.out.println(" ");
-        System.out.println("====== OBJETO DE CONSOLIDACIONES FLEXIBLES ======");
-        System.out.println(flexCons);
+        // System.out.println(" ");
+        // System.out.println("====== OBJETO DE CONSOLIDACIONES FLEXIBLES ======");
+        // System.out.println(flexCons);
     }
 }

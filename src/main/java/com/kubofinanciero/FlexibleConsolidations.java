@@ -680,11 +680,11 @@ public class FlexibleConsolidations {
                 totalAmounts += debt.getBalance();
               }
               break;
-          }
-        }
+            }
 
-        if (!doWeighing && rateForWeighing != getConsolidationOffer().getRate()) {
-          doWeighing = true;
+          if (debt.isUploadedDocuments()) {
+            doWeighing = true;
+          }
         }
 
         if (externalRate > 0) {
@@ -699,10 +699,9 @@ public class FlexibleConsolidations {
       this.weightedRate = amountRate / totalAmounts;
       double weightedRateWithDiscount = this.weightedRate * (1 - this.discountWeightedRate);
 
-      if (this.weightedRate <= minimumRateOffer || weightedRateWithDiscount <= minimumRateOffer) {
+      if (weightedRateWithDiscount <= minimumRateOffer) {
         this.weightedRate = minimumRateOffer;
-      } else if (this.weightedRate >= getConsolidationOffer().getRate()
-          || weightedRateWithDiscount >= getConsolidationOffer().getRate()) {
+      } else if (weightedRateWithDiscount >= getConsolidationOffer().getRate()) {
         this.weightedRate = getConsolidationOffer().getRate();
       } else {
         this.weightedRate = weightedRateWithDiscount;
