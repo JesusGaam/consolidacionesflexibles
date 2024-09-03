@@ -680,7 +680,7 @@ public class FlexibleConsolidations {
                 totalAmounts += debt.getBalance();
               }
               break;
-            }
+          }
 
           if (debt.isUploadedDocuments()) {
             doWeighing = true;
@@ -1018,6 +1018,49 @@ public class FlexibleConsolidations {
         ", \"catCalculationDate\": \"" + catSimulation.getCalculationDate() +
         "\" , \"buroDebts\":" + getConsolidationOffer().buroDebtsToJSONString() +
         "}";
+  }
+
+  /**
+   * 
+   * @return Retorna JSON que se necesita para los endpoints de generación de
+   *         documento PDF de propuesta
+   */
+  public String toJSONStringPdfV2(String firstname, String email) {
+    if (firstname != null) {
+      firstname = " \"firstname\": \"" + firstname + "\",";
+    } else {
+      firstname = "";
+    }
+
+    if (email != null) {
+      email = " \"email\": \"" + email + "\",";
+    } else {
+      email = "";
+    }
+
+    return "{" +
+        firstname +
+        email +
+        "\"totalAmountSelectedDebts\": " + GenericUtilities.round(totalAmountSelectedDebts) +
+        ", \"monthlyExternalPayment\": " + GenericUtilities.round(monthlyExternalPayment) +
+        ", \"maxDebtsRate\":" + maxDebtsRate +
+        ", \"totalSelectedDebts\":" + totalSelectedDebts +
+        ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
+
+        ", \"amount\": " + GenericUtilities.round(offerAmount) +
+        ", \"rate\": " + offerRate +
+        ", \"commissionAmount\":" + offerCommissionAmount +
+        ", \"frequency\": \"" + catSimulation.getFrequency()+
+        "\", \"payment\":" + catSimulation.getPayment()+
+        ", \"paymentTerm\":" + catSimulation.getPaymentTerm()+
+        ", \"totalAmountToConsolidate\": " + GenericUtilities.round(totalAmountToConsolidate) +
+        ", \"totalAmountToReceive\": " + GenericUtilities.round(totalAmountToReceive) +
+
+        ", \"totalSaving\": " + GenericUtilities.round(totalSaving) +
+        ", \"monthlySavings\": " + GenericUtilities.round(monthlySavings) +
+        ", \"cat\": " + catSimulation.getCat() +
+        ", \"catCalculationDate\": \"" + catSimulation.getCalculationDate() +
+        "\"}";
   }
 
   /**
