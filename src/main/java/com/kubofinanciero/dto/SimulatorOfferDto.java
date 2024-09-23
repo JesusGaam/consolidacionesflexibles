@@ -1,18 +1,26 @@
 package com.kubofinanciero.dto;
 
+/**
+ * @param payment Contiene el valor cuota simulada por el cliente (la cuota puede ser semanal, catorcenal, quinceal o mensual)
+ * @param paymentTerm Contiene el plazo simulado por el cliente (el plazo es expresado en semanal, catorcenal, quinceal o mensual)
+ * @param frequency Contiene la frecuencia seleccionada en la simulacion por el cliente
+ */
 public class SimulatorOfferDto {
   private String loanType;
   private String subLoanType;
   private double minPayment;
   private double maxPayment;
+  private double payment;
   private double minAmount;
   private double maxAmount;
   private int minPaymentTerm;
   private int maxPaymentTerm;
+  private int paymentTerm;
   private double rate;
   private double commissionRate;
   private int segment;
   private char[] frequencies;
+  private char frequency;
 
   public SimulatorOfferDto() {
   }
@@ -91,12 +99,20 @@ public class SimulatorOfferDto {
     return maxPayment;
   }
 
+  public double getPayment() {
+    return payment;
+  }
+
   public int getMinPaymentTerm() {
     return minPaymentTerm;
   }
 
   public int getMaxPaymentTerm() {
     return maxPaymentTerm;
+  }
+
+  public int getPaymentTerm() {
+    return paymentTerm;
   }
 
   public double getRate() {
@@ -116,6 +132,10 @@ public class SimulatorOfferDto {
       frequencies = new char[] {};
     }
     return frequencies;
+  }
+
+  public char getFrequency() {
+    return frequency;
   }
 
   public SimulatorOfferDto setLoanType(String loanType) {
@@ -148,6 +168,11 @@ public class SimulatorOfferDto {
     return this;
   }
 
+  public SimulatorOfferDto setPayment(double payment) {
+    this.payment = payment;
+    return this;
+  }
+
   public SimulatorOfferDto setMinPaymentTerm(int minPaymentTerm) {
     this.minPaymentTerm = minPaymentTerm;
     return this;
@@ -155,6 +180,11 @@ public class SimulatorOfferDto {
 
   public SimulatorOfferDto setMaxPaymentTerm(int maxPaymentTerm) {
     this.maxPaymentTerm = maxPaymentTerm;
+    return this;
+  }
+
+  public SimulatorOfferDto setPaymentTerm(int paymentTerm) {
+    this.paymentTerm = paymentTerm;
     return this;
   }
 
@@ -170,6 +200,11 @@ public class SimulatorOfferDto {
 
   public SimulatorOfferDto setFrequencies(char[] frequencies) {
     this.frequencies = frequencies;
+    return this;
+  }
+
+  public SimulatorOfferDto setFrequency(char frequency) {
+    this.frequency = frequency;
     return this;
   }
 
@@ -191,11 +226,15 @@ public class SimulatorOfferDto {
         ", \"maxAmount\": " + maxAmount +
         ", \"minPayment\": " + minPayment +
         ", \"maxPayment\": " + maxPayment +
+        ", \"payment\": " + payment +
         ", \"minPaymentTerm\": " + minPaymentTerm +
         ", \"maxPaymentTerm\": " + maxPaymentTerm +
+        ", \"paymentTerm\": " + paymentTerm +
         ", \"rate\": " + rate +
         ", \"commissionRate\": " + commissionRate +
-        ", \"frequencies\": " + frequenciesToString() + "}";
+        ", \"frequencies\": " + frequenciesToString() +
+        ", \"frequency\": \"" + frequency + "\"" +
+        "}";
   }
 
   @Override
@@ -206,10 +245,14 @@ public class SimulatorOfferDto {
         ", \"monto_max\": " + maxAmount +
         ", \"cuota_min\": " + minPayment +
         ", \"cuota_max\": " + maxPayment +
+        ", \"cuota_defecto\": " + this.payment +
         ", \"plazo_min\": " + minPaymentTerm +
         ", \"plazo_max\": " + maxPaymentTerm +
+        ", \"plazo_defecto\": " + this.paymentTerm +
         ", \"tasa\": " + rate +
         ", \"comision\": " + commissionRate +
-        ", \"frecuencia\": " + frequenciesToString() + "}";
+        ", \"frecuencia\": " + frequenciesToString() +
+        ", \"frecuencia_defecto\": \"" + this.frequency + "\"" +
+        "}";
   }
 }

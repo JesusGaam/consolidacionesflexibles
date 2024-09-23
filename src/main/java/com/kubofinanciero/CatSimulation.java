@@ -27,20 +27,21 @@ public class CatSimulation {
   private SimulatorOfferDto simulatorOffer;
   private int extendedPaymentTerm;
   private double ratefrequency;
+  private double globalMinAmount;
 
   private final int MAX_PAYMENT_TERM = 60;
-  private final int MIN_AMOUNT = 5000;
 
   public CatSimulation() {
     frequency = 'M';
   }
 
-  public CatSimulation(double suggestedPayment, SimulatorOfferDto simulatorOffer, int extendedPaymentTerm) {
+  public CatSimulation(double suggestedPayment, SimulatorOfferDto simulatorOffer, int extendedPaymentTerm, double globalMinAmount) {
     this.simulatorOffer = simulatorOffer;
     this.amount = simulatorOffer.getMaxAmount();
     this.rate = simulatorOffer.getRate();
     this.commissionRate = simulatorOffer.getCommissionRate();
     this.suggestedPayment = suggestedPayment;
+    this.globalMinAmount = globalMinAmount;
 
     getCalculationDate();
     validateExtendedPaymentTerm(extendedPaymentTerm);
@@ -58,7 +59,8 @@ public class CatSimulation {
       int suggestedPaymentTerm,
       char frequency,
       SimulatorOfferDto simulatorOffer,
-      int extendedPaymentTerm) {
+      int extendedPaymentTerm, 
+      double globalMinAmount) {
 
     this.simulatorOffer = simulatorOffer;
     this.amount = simulatorOffer.getMaxAmount();
@@ -66,6 +68,7 @@ public class CatSimulation {
     this.commissionRate = simulatorOffer.getCommissionRate();
     this.suggestedPayment = suggestedPayment;
     this.suggestedPaymentTerm = suggestedPaymentTerm;
+    this.globalMinAmount = globalMinAmount;
 
     getCalculationDate();
     validateExtendedPaymentTerm(extendedPaymentTerm);
@@ -183,7 +186,7 @@ public class CatSimulation {
   }
 
   public boolean validAmount() {
-    return amount <= 0 || amount < MIN_AMOUNT;
+    return amount <= 0 || amount < globalMinAmount;
   }
 
   public String getCalculationDate() {
@@ -381,14 +384,14 @@ public class CatSimulation {
         .setMaxPaymentTerm(14)
         .setFrequencies(new char[] { 'M', 'S', 'K', 'W' });
 
-    CatSimulation cat = new CatSimulation(6000, so, 6);
+    CatSimulation cat = new CatSimulation(6000, so, 6, 25000);
     System.out.println(cat);
 
-    CatSimulation cat2 = new CatSimulation(6000, 24, 'W', so, 6);
+    CatSimulation cat2 = new CatSimulation(6000, 24, 'W', so, 6, 25000);
     System.out.println("SIMULACION EN SEMANAS");
     System.out.println(cat2);
 
-    CatSimulation cat3 = new CatSimulation(6000, 28, 'K', so, 6);
+    CatSimulation cat3 = new CatSimulation(6000, 28, 'K', so, 6, 25000);
     System.out.println("SIMULACION EN CATORCENAS");
     System.out.println(cat3);
 

@@ -83,6 +83,7 @@ public class FlexibleConsolidations {
 
   private double discountWeightedRate;
   private double minimumRateOffer;
+  private double globalMinAmount;
   private double globalMaxAmount;
   private int extendedPaymentTerm;
 
@@ -92,6 +93,7 @@ public class FlexibleConsolidations {
 
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
+    this.globalMinAmount = 0;
     this.globalMaxAmount = 0;
     this.extendedPaymentTerm = 0;
     this.includeCommissionInOfferAmount = true;
@@ -129,6 +131,7 @@ public class FlexibleConsolidations {
     this.offerKuboScore = "";
     this.discountWeightedRate = 0;
     this.minimumRateOffer = 0;
+    this.globalMinAmount = 0;
     this.globalMaxAmount = 0;
     this.extendedPaymentTerm = 0;
     this.includeCommissionInOfferAmount = true;
@@ -138,6 +141,7 @@ public class FlexibleConsolidations {
       ConsolidationOfferDto consolidationOffer,
       double discountWeightedRate,
       double minimumRateOffer,
+      double globalMinAmount,
       double globalMaxAmount,
       int extendedPaymentTerm) {
     setConsolidationOffer(consolidationOffer);
@@ -145,6 +149,7 @@ public class FlexibleConsolidations {
 
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
+    this.globalMinAmount = globalMinAmount;
     this.globalMaxAmount = globalMaxAmount;
     this.extendedPaymentTerm = extendedPaymentTerm;
     this.includeCommissionInOfferAmount = true;
@@ -167,6 +172,7 @@ public class FlexibleConsolidations {
       ConsolidationOfferDto consolidationOffer,
       double discountWeightedRate,
       double minimumRateOffer,
+      double globalMinAmount,
       double globalMaxAmount,
       int extendedPaymentTerm) {
     this.offerAmount = offerAmount;
@@ -186,6 +192,7 @@ public class FlexibleConsolidations {
 
     this.discountWeightedRate = discountWeightedRate;
     this.minimumRateOffer = minimumRateOffer;
+    this.globalMinAmount = globalMinAmount;
     this.globalMaxAmount = globalMaxAmount;
     this.extendedPaymentTerm = extendedPaymentTerm;
     this.includeCommissionInOfferAmount = true;
@@ -318,6 +325,10 @@ public class FlexibleConsolidations {
     return consolidationOffer;
   }
 
+  public double getGlobalMinAmount() {
+    return globalMinAmount;
+  }
+
   public double getGlobalMaxAmount() {
     return globalMaxAmount;
   }
@@ -345,7 +356,7 @@ public class FlexibleConsolidations {
     if (this.offerStatus == STATUS_EXCEEDED_AMOUNT) {
       return;
     }
-    
+
     double[] rates = getConsolidationOffer().getAssistedRates();
     double[] comissions = getConsolidationOffer().getCommissionRateList();
     String[] kuboScores = getConsolidationOffer().getKuboScores();
@@ -500,6 +511,14 @@ public class FlexibleConsolidations {
     this.discountWeightedRate = discountWeightedRate;
   }
 
+  public void setGlobalMinAmount(double globalMinAmount) {
+    if (globalMinAmount <= 0) {
+      this.globalMinAmount = 0;
+    }
+
+    this.globalMinAmount = globalMinAmount;
+  }
+
   public void setGlobalMaxAmount(double globalMaxAmount) {
     if (globalMaxAmount <= 0) {
       this.globalMaxAmount = 0;
@@ -518,9 +537,21 @@ public class FlexibleConsolidations {
 
   public void updateCatSimulation(int suggestedPaymentTerm, char frequency) {
     getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
-    catSimulation = new CatSimulation(getSuggestedPayment(), suggestedPaymentTerm, frequency, getSimulatorOffer(),
-        extendedPaymentTerm);
-    getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
+
+    catSimulation = new CatSimulation(
+        getSuggestedPayment(),
+        suggestedPaymentTerm,
+        frequency,
+        getSimulatorOffer(),
+        extendedPaymentTerm,
+        getGlobalMinAmount());
+
+    getSimulatorOffer()
+        .setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm())
+        .setPayment(catSimulation.getPayment())
+        .setPaymentTerm(catSimulation.getPaymentTerm())
+        .setFrequency(catSimulation.getFrequency());
+    ;
   }
 
   public void minimumRateOffer(double minimumRateOffer) {
@@ -553,14 +584,23 @@ public class FlexibleConsolidations {
     updateBuroDebtsStatistics();
     calculateSaving();
 
-    getSimulatorOffer().setMinAmount(this.offerAmount);
-    getSimulatorOffer().setMaxAmount(this.offerAmount);
-    getSimulatorOffer().setRate(this.offerRate);
-    getSimulatorOffer().setCommissionRate(this.offerCommission);
-    getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
+    getSimulatorOffer().setMinAmount(this.offerAmount)
+        .setMaxAmount(this.offerAmount)
+        .setRate(this.offerRate)
+        .setCommissionRate(this.offerCommission)
+        .setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
 
-    catSimulation = new CatSimulation(getSuggestedPayment(), getSimulatorOffer(), extendedPaymentTerm);
-    getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
+    catSimulation = new CatSimulation(
+        getSuggestedPayment(),
+        getSimulatorOffer(),
+        extendedPaymentTerm,
+        getGlobalMinAmount());
+
+    getSimulatorOffer()
+        .setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm())
+        .setPayment(catSimulation.getPayment())
+        .setPaymentTerm(catSimulation.getPaymentTerm())
+        .setFrequency(catSimulation.getFrequency());
   }
 
   public void updateOffer() {
@@ -654,10 +694,10 @@ public class FlexibleConsolidations {
               }
               break;
           }
-        }
 
-        if (!doWeighing && rateForWeighing != getConsolidationOffer().getRate()) {
-          doWeighing = true;
+          if (debt.isUploadedDocuments()) {
+            doWeighing = true;
+          }
         }
 
         if (externalRate > 0) {
@@ -672,10 +712,9 @@ public class FlexibleConsolidations {
       this.weightedRate = amountRate / totalAmounts;
       double weightedRateWithDiscount = this.weightedRate * (1 - this.discountWeightedRate);
 
-      if (this.weightedRate <= minimumRateOffer || weightedRateWithDiscount <= minimumRateOffer) {
+      if (weightedRateWithDiscount <= minimumRateOffer) {
         this.weightedRate = minimumRateOffer;
-      } else if (this.weightedRate >= getConsolidationOffer().getRate()
-          || weightedRateWithDiscount >= getConsolidationOffer().getRate()) {
+      } else if (weightedRateWithDiscount >= getConsolidationOffer().getRate()) {
         this.weightedRate = getConsolidationOffer().getRate();
       } else {
         this.weightedRate = weightedRateWithDiscount;
@@ -1000,6 +1039,49 @@ public class FlexibleConsolidations {
 
   /**
    * 
+   * @return Retorna JSON que se necesita para los endpoints de generación de
+   *         documento PDF de propuesta
+   */
+  public String toJSONStringPdfV2(String firstname, String email) {
+    if (firstname != null) {
+      firstname = " \"firstname\": \"" + firstname + "\",";
+    } else {
+      firstname = "";
+    }
+
+    if (email != null) {
+      email = " \"email\": \"" + email + "\",";
+    } else {
+      email = "";
+    }
+
+    return "{" +
+        firstname +
+        email +
+        "\"totalAmountSelectedDebts\": " + GenericUtilities.round(totalAmountSelectedDebts) +
+        ", \"monthlyExternalPayment\": " + GenericUtilities.round(monthlyExternalPayment) +
+        ", \"maxDebtsRate\":" + maxDebtsRate +
+        ", \"totalSelectedDebts\":" + totalSelectedDebts +
+        ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
+
+        ", \"amount\": " + GenericUtilities.round(offerAmount) +
+        ", \"rate\": " + offerRate +
+        ", \"commissionAmount\":" + offerCommissionAmount +
+        ", \"frequency\": \"" + catSimulation.getFrequency()+
+        "\", \"payment\":" + catSimulation.getPayment()+
+        ", \"paymentTerm\":" + catSimulation.getPaymentTerm()+
+        ", \"totalAmountToConsolidate\": " + GenericUtilities.round(totalAmountToConsolidate) +
+        ", \"totalAmountToReceive\": " + GenericUtilities.round(totalAmountToReceive) +
+
+        ", \"totalSaving\": " + GenericUtilities.round(totalSaving) +
+        ", \"monthlySavings\": " + GenericUtilities.round(monthlySavings) +
+        ", \"cat\": " + catSimulation.getCat() +
+        ", \"catCalculationDate\": \"" + catSimulation.getCalculationDate() +
+        "\"}";
+  }
+
+  /**
+   * 
    * @return Retorna JSON global de FlexibleConsolidacion bajo la convensión de
    *         vairables en inglés
    */
@@ -1058,8 +1140,8 @@ public class FlexibleConsolidations {
         ", \"totalUndiagnosableDebts\":" + totalUndiagnosableDebts +
         ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"maxDebtsRate\":" + maxDebtsRate +
-        ", \"catSimulation\":" + catSimulation +
-        ", \"simulatorOffer\":" + simulatorOffer +
+        ", \"catSimulation\":" + getCatSimulation() +
+        ", \"simulatorOffer\":" + getSimulatorOffer() +
         ", \"consolidationOffer\":" + getConsolidationOffer() +
         "}";
   }
