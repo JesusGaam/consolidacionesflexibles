@@ -63,23 +63,23 @@ public class App {
         System.out.println(flexCons.getCatSimulation());
         System.out.println(" ");
 
-        // flexCons.updateCatSimulation(30, 'W');
+        // flexCons.updateCatSimulation(25, 'W');
         // System.out.println(flexCons.getCatSimulation());
         // System.out.println(" ");
 
-        // flexCons.updateCatSimulation(20, 'S');
+        // flexCons.updateCatSimulation(12, 'S');
         // System.out.println(flexCons.getCatSimulation());
         // System.out.println(" ");
 
-        // flexCons.updateCatSimulation(2, 'F');
-        // System.out.println(flexCons.getCatSimulation());
+        flexCons.updateCatSimulation(22, 'M');
+        System.out.println(flexCons.getCatSimulation());
 
         System.out.println(" ");
         System.out.println("====== OBJETO DE CONSOLIDACIONES FLEXIBLES ======");
         System.out.println(flexCons);
 
-        System.out.println(" ");
-        System.out.println("====== OBJETO PARA PDF V2 ======");
-        System.out.println(flexCons.toJSONStringPdfV2("José", "jose@mail.com"));
+        // System.out.println(" ");
+        // System.out.println("====== OBJETO PARA PDF V2 ======");
+        // System.out.println(flexCons.toJSONStringPdfV2("José", "jose@mail.com"));
     }
 }

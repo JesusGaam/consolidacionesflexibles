@@ -537,6 +537,7 @@ public class FlexibleConsolidations {
 
   public void updateCatSimulation(int suggestedPaymentTerm, char frequency) {
     getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
+
     catSimulation = new CatSimulation(
         getSuggestedPayment(),
         suggestedPaymentTerm,
@@ -544,7 +545,13 @@ public class FlexibleConsolidations {
         getSimulatorOffer(),
         extendedPaymentTerm,
         getGlobalMinAmount());
-    getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
+
+    getSimulatorOffer()
+        .setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm())
+        .setPayment(catSimulation.getPayment())
+        .setPaymentTerm(catSimulation.getPaymentTerm())
+        .setFrequency(catSimulation.getFrequency());
+    ;
   }
 
   public void minimumRateOffer(double minimumRateOffer) {
@@ -577,18 +584,23 @@ public class FlexibleConsolidations {
     updateBuroDebtsStatistics();
     calculateSaving();
 
-    getSimulatorOffer().setMinAmount(this.offerAmount);
-    getSimulatorOffer().setMaxAmount(this.offerAmount);
-    getSimulatorOffer().setRate(this.offerRate);
-    getSimulatorOffer().setCommissionRate(this.offerCommission);
-    getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
+    getSimulatorOffer().setMinAmount(this.offerAmount)
+        .setMaxAmount(this.offerAmount)
+        .setRate(this.offerRate)
+        .setCommissionRate(this.offerCommission)
+        .setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
 
     catSimulation = new CatSimulation(
         getSuggestedPayment(),
         getSimulatorOffer(),
         extendedPaymentTerm,
         getGlobalMinAmount());
-    getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
+
+    getSimulatorOffer()
+        .setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm())
+        .setPayment(catSimulation.getPayment())
+        .setPaymentTerm(catSimulation.getPaymentTerm())
+        .setFrequency(catSimulation.getFrequency());
   }
 
   public void updateOffer() {
@@ -1123,8 +1135,8 @@ public class FlexibleConsolidations {
         ", \"totalUndiagnosableDebts\":" + totalUndiagnosableDebts +
         ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"maxDebtsRate\":" + maxDebtsRate +
-        ", \"catSimulation\":" + catSimulation +
-        ", \"simulatorOffer\":" + simulatorOffer +
+        ", \"catSimulation\":" + getCatSimulation() +
+        ", \"simulatorOffer\":" + getSimulatorOffer() +
         ", \"consolidationOffer\":" + getConsolidationOffer() +
         "}";
   }
