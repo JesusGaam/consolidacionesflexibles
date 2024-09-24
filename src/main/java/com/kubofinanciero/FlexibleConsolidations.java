@@ -537,6 +537,7 @@ public class FlexibleConsolidations {
 
   public void updateCatSimulation(int suggestedPaymentTerm, char frequency) {
     getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
+
     catSimulation = new CatSimulation(
         getSuggestedPayment(),
         suggestedPaymentTerm,
@@ -544,7 +545,13 @@ public class FlexibleConsolidations {
         getSimulatorOffer(),
         extendedPaymentTerm,
         getGlobalMinAmount());
-    getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
+
+    getSimulatorOffer()
+        .setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm())
+        .setPayment(catSimulation.getPayment())
+        .setPaymentTerm(catSimulation.getPaymentTerm())
+        .setFrequency(catSimulation.getFrequency());
+    ;
   }
 
   public void minimumRateOffer(double minimumRateOffer) {
@@ -577,18 +584,23 @@ public class FlexibleConsolidations {
     updateBuroDebtsStatistics();
     calculateSaving();
 
-    getSimulatorOffer().setMinAmount(this.offerAmount);
-    getSimulatorOffer().setMaxAmount(this.offerAmount);
-    getSimulatorOffer().setRate(this.offerRate);
-    getSimulatorOffer().setCommissionRate(this.offerCommission);
-    getSimulatorOffer().setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
+    getSimulatorOffer().setMinAmount(this.offerAmount)
+        .setMaxAmount(this.offerAmount)
+        .setRate(this.offerRate)
+        .setCommissionRate(this.offerCommission)
+        .setMaxPaymentTerm(getConsolidationOffer().getMaxPaymentTerm());
 
     catSimulation = new CatSimulation(
         getSuggestedPayment(),
         getSimulatorOffer(),
         extendedPaymentTerm,
         getGlobalMinAmount());
-    getSimulatorOffer().setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm());
+
+    getSimulatorOffer()
+        .setMaxPaymentTerm(catSimulation.getMonthlyMaxPaymentTerm())
+        .setPayment(catSimulation.getPayment())
+        .setPaymentTerm(catSimulation.getPaymentTerm())
+        .setFrequency(catSimulation.getFrequency());
   }
 
   public void updateOffer() {
@@ -675,12 +687,13 @@ public class FlexibleConsolidations {
               break;
 
             case 'R':
+            case 'O':
               if (externalRate > 0 && debt.getBalance() > 0) {
                 amountRate += debt.getBalance() * rateForWeighing;
                 totalAmounts += debt.getBalance();
               }
               break;
-            }
+          }
 
           if (debt.isUploadedDocuments()) {
             doWeighing = true;
@@ -835,8 +848,8 @@ public class FlexibleConsolidations {
       if (!debt.getConsolidatedDebt()) {
         continue;
       }
-
-      if (debt.getTypeDebt() == 'R' && !debt.canBeSelected()) {
+      
+      if (debt.isRevolverCreditCard() && !debt.canBeSelected()) {
         continue;
       }
 
@@ -899,6 +912,7 @@ public class FlexibleConsolidations {
             totalAmountToConsolidate += debt.getAmountAwarded();
             break;
           case 'R':
+          case 'O':
             totalAmountToConsolidate += debt.getBalance();
             break;
         }
@@ -913,15 +927,18 @@ public class FlexibleConsolidations {
         double balance = debt.getBalance() > 0 ? debt.getBalance() : 0;
         double amountAwarded = debt.getAmountAwarded() > 0 ? debt.getAmountAwarded() : 0;
 
-        if (debt.getTypeDebt() == 'R') {
-          totalAmountSelectedDebts += balance;
-        } else {
-          totalAmountSelectedDebts += amountAwarded;
-        }
+        switch (debt.getTypeDebt()) {
+          case 'I':
+            totalAmountSelectedDebts += amountAwarded;
 
-        if (debt.getTypeDebt() == 'I'
-            && debt.getAmountAwarded() > debt.getBalance()) {
-          excedentAmount += debt.getAmountAwarded() - debt.getBalance();
+            if (debt.getAmountAwarded() > debt.getBalance()) {
+              excedentAmount += debt.getAmountAwarded() - debt.getBalance();
+            }
+            break;
+          case 'R':
+          case 'O':
+            totalAmountSelectedDebts += balance;
+            break;
         }
       }
     }
@@ -1022,6 +1039,49 @@ public class FlexibleConsolidations {
 
   /**
    * 
+   * @return Retorna JSON que se necesita para los endpoints de generación de
+   *         documento PDF de propuesta
+   */
+  public String toJSONStringPdfV2(String firstname, String email) {
+    if (firstname != null) {
+      firstname = " \"firstname\": \"" + firstname + "\",";
+    } else {
+      firstname = "";
+    }
+
+    if (email != null) {
+      email = " \"email\": \"" + email + "\",";
+    } else {
+      email = "";
+    }
+
+    return "{" +
+        firstname +
+        email +
+        "\"totalAmountSelectedDebts\": " + GenericUtilities.round(totalAmountSelectedDebts) +
+        ", \"monthlyExternalPayment\": " + GenericUtilities.round(monthlyExternalPayment) +
+        ", \"maxDebtsRate\":" + maxDebtsRate +
+        ", \"totalSelectedDebts\":" + totalSelectedDebts +
+        ", \"totalDiagnosableDebts\":" + totalDiagnosableDebts +
+
+        ", \"amount\": " + GenericUtilities.round(offerAmount) +
+        ", \"rate\": " + offerRate +
+        ", \"commissionAmount\":" + offerCommissionAmount +
+        ", \"frequency\": \"" + catSimulation.getFrequency()+
+        "\", \"payment\":" + catSimulation.getPayment()+
+        ", \"paymentTerm\":" + catSimulation.getPaymentTerm()+
+        ", \"totalAmountToConsolidate\": " + GenericUtilities.round(totalAmountToConsolidate) +
+        ", \"totalAmountToReceive\": " + GenericUtilities.round(totalAmountToReceive) +
+
+        ", \"totalSaving\": " + GenericUtilities.round(totalSaving) +
+        ", \"monthlySavings\": " + GenericUtilities.round(monthlySavings) +
+        ", \"cat\": " + catSimulation.getCat() +
+        ", \"catCalculationDate\": \"" + catSimulation.getCalculationDate() +
+        "\"}";
+  }
+
+  /**
+   * 
    * @return Retorna JSON global de FlexibleConsolidacion bajo la convensión de
    *         vairables en inglés
    */
@@ -1080,8 +1140,8 @@ public class FlexibleConsolidations {
         ", \"totalUndiagnosableDebts\":" + totalUndiagnosableDebts +
         ", \"totalSelectedDebts\":" + totalSelectedDebts +
         ", \"maxDebtsRate\":" + maxDebtsRate +
-        ", \"catSimulation\":" + catSimulation +
-        ", \"simulatorOffer\":" + simulatorOffer +
+        ", \"catSimulation\":" + getCatSimulation() +
+        ", \"simulatorOffer\":" + getSimulatorOffer() +
         ", \"consolidationOffer\":" + getConsolidationOffer() +
         "}";
   }

@@ -107,7 +107,7 @@ public class DebtDto {
     typeDebtList.put('I', "Crédito personal");
     typeDebtList.put('R', "Tarjeta de crédito");
     typeDebtList.put('M', "Hipoteca");
-    // O: Son creditos no tienen linea definida (p.ej: telefonia, internet, etc)
+    // O: Son catalogadas como servicios o creditos no tienen linea definida (como las tarjetas que dan en tiendas walmart, soriana, etc)
     typeDebtList.put('O', "Servicios");
     // X: Se refiere a creditos para personas morales o fisicas con Act. empresarial
     typeDebtList.put('X', "Crédito empresarial");
@@ -174,7 +174,7 @@ public class DebtDto {
   }
 
   public char getExternalFrequency() {
-    if (this.getTypeDebt() == 'R') {
+    if (isRevolverCreditCard()) {
       return REVOLVER_FREQUENCY;
     }
 
@@ -223,6 +223,10 @@ public class DebtDto {
     return typeDebt;
   }
 
+  public boolean isRevolverCreditCard() {
+    return getTypeDebt() == 'R' || getTypeDebt() == 'O';
+  }
+
   public String getTypeDebtName() {
     return typeDebtName;
   }
@@ -252,7 +256,7 @@ public class DebtDto {
    * consolidables y editables.
    */
   public DebtDto setFinancialEntity(String financialEntity) {
-    if (!this.consolidatedDebt || !editableDept()) {
+    if (!canBeEdited()) {
       return this;
     }
 
@@ -268,7 +272,7 @@ public class DebtDto {
    * consolidables y editables.
    */
   public DebtDto setPayment(double payment) {
-    if (!this.consolidatedDebt || !editableDept()) {
+    if (!canBeEdited()) {
       return this;
     }
 
@@ -288,7 +292,7 @@ public class DebtDto {
    * deudas consolidables y editables.
    */
   public DebtDto setBalance(double balance) {
-    if (!this.consolidatedDebt || !editableDept()) {
+    if (!canBeEdited()) {
       return this;
     }
 
@@ -308,7 +312,7 @@ public class DebtDto {
    * editarse para deudas consolidables y editables.
    */
   public DebtDto setAmountAwarded(double amountAwarded) {
-    if (!this.consolidatedDebt || !editableDept()) {
+    if (!canBeEdited()) {
       return this;
     }
 
@@ -328,7 +332,7 @@ public class DebtDto {
    * NOTA: Este cambio requiere subir documento comprobatorio
    */
   public DebtDto setExternalRate(double externalRate) {
-    if (!this.consolidatedDebt || !editableDept()) {
+    if (!canBeEdited()) {
       return this;
     }
 
@@ -349,7 +353,7 @@ public class DebtDto {
    * Se utiliza para calcular los ahorros.
    */
   public DebtDto setKuboRate(double kuboRate) {
-    if (!this.consolidatedDebt || !editableDept()) {
+    if (!canBeEdited()) {
       return this;
     }
 
@@ -368,7 +372,7 @@ public class DebtDto {
    * NOTA: al actualizarse, se recalculan los ahorros y el progreso de la deuda.
    */
   public DebtDto setAwardedPaymentTerms(int awardedPaymentTerms) {
-    if (!this.consolidatedDebt || !editableDept()) {
+    if (!canBeEdited()) {
       return this;
     }
 
@@ -391,7 +395,7 @@ public class DebtDto {
    * NOTA: Al actualizarse, se recalculan los ahorros y el progreso de la deuda.
    */
   public DebtDto setRemainingPaymentTerms(int remainingPaymentTerms) {
-    if (!this.consolidatedDebt || !editableDept()) {
+    if (!canBeEdited()) {
       return this;
     }
 
@@ -417,7 +421,7 @@ public class DebtDto {
    * la mensual para calculos de ahorros.
    */
   public DebtDto setExternalFrequency(char externalFrequency) {
-    if (!this.consolidatedDebt || !editableDept() || typeDebt == 'R') {
+    if (!canBeEdited() || isRevolverCreditCard()) {
       return this;
     }
 
@@ -436,7 +440,7 @@ public class DebtDto {
    * para deudas consolidables y editables.
    */
   public DebtDto setStatusDebt(int statusDebt) {
-    if (!this.consolidatedDebt || !editableDept()) {
+    if (!canBeEdited()) {
       return this;
     }
 
@@ -450,7 +454,7 @@ public class DebtDto {
    */
   public DebtDto setSelected(boolean isSelected) {
 
-    if (canBeSelected() && editableDept()) {
+    if (canBeSelected()) {
       this.isSelected = isSelected;
     }
     return this;
@@ -471,40 +475,12 @@ public class DebtDto {
     return this;
   }
 
-  public boolean canBeSelected() {
-    return this.consolidatedDebt && statusRate.equals("Calculable");
+  public boolean canBeEdited() {
+    return this.consolidatedDebt && !getFinancialEntity().equals("KUBO FINANCIERO");
   }
 
-  /*
-   * FUNCION DEPRECIADA para validar si la deuda es consolidable
-   */
-  public void validateConsolidatedDebt() {
-    if (typeDebt != 'R' && typeDebt != 'I') {
-      consolidatedDebt = false;
-      return;
-    }
-    if (financialEntity.equals("KUBO FINANCIERO")) {
-      consolidatedDebt = false;
-      return;
-    }
-
-    if (typeDebt == 'R') {
-      consolidatedDebt = true;
-      return;
-    }
-
-    // ACA EN ADELANTE SOLO ENTRAN LAS DEUDAS A PAGOS FIJOS
-    if (statusRate.equals("Calculable")) {
-      consolidatedDebt = true;
-      return;
-    }
-
-    if (amountAwarded > 0 && externalRate > 0) {
-      consolidatedDebt = true;
-      return;
-    }
-
-    consolidatedDebt = false;
+  public boolean canBeSelected() {
+    return canBeEdited() && statusRate.equals("Calculable");
   }
 
   /**
@@ -517,14 +493,14 @@ public class DebtDto {
     }
 
     double amount = getAmountAwarded();
-    if (this.typeDebt == 'R') {
+    if (isRevolverCreditCard()) {
       amount = getBalance();
       calculateRevolverPaymentTerms();
     }
 
     if (getExternalFrequency() == 'V' || getExternalFrequency() == 'P'
         || amount <= 0 || getAwardedPaymentTerms() <= 0 || getPayment() <= 0
-        || (this.typeDebt == 'R' && this.revolverType.equals(REVOLVER_TRANSACTOR_TYPE))) {
+        || (isRevolverCreditCard() && getRevolverType().equals(REVOLVER_TRANSACTOR_TYPE))) {
 
       this.monthlyKuboPayment = 0;
       this.monthlySaving = 0;
@@ -536,16 +512,13 @@ public class DebtDto {
     double rate = LoanSimulator.rateFrequency(kuboRate, getExternalFrequency(), true);
     double kuboPayment = LoanSimulator.payment(amount, getAwardedPaymentTerms(), rate);
     double saving = getPayment() > kuboPayment ? getPayment() - kuboPayment : 0;
-
-    // System.out.println("=================");
-    // System.out.println("Registro: " + registry + ", Monto deuda:" + amount);
-    // System.out.println("Tasa externa: " + externalRate + ", Tasa kubo: " +
-    // kuboRate + ", Plazo: "
-    // + getAwardedPaymentTerms() + ", Frecuencia: " + getExternalFrequency());
-    // System.out.println("Pago externo: " + getPayment() + ", Pago kubo:" +
-    // kuboPayment + ", Ahorro mensual: " + saving);
-    // System.out.println("Ahorro tota: " + saving * getAwardedPaymentTerms());
-    // System.out.println("=================");
+    
+    //System.out.println("=================");
+    //System.out.println("Registro: " + registry + ", Monto deuda:" + amount);
+    //System.out.println("Tasa externa: " + externalRate + ", Tasa kubo: " + kuboRate + ", Plazo: " + getAwardedPaymentTerms() + ", Frecuencia: " + getExternalFrequency());
+    //System.out.println("Pago externo: " + getPayment() + ", Pago kubo:" + kuboPayment + ", Ahorro mensual: " + saving);
+    //System.out.println("Ahorro tota: " + saving * getAwardedPaymentTerms());
+    //System.out.println("=================");
 
     this.monthlyKuboPayment = convertToMonthlyPayment(kuboPayment);
     this.monthlySaving = convertToMonthlyPayment(saving);
@@ -574,7 +547,7 @@ public class DebtDto {
   }
 
   public double convertToMonthlyPayment(double saving) {
-    switch (this.externalFrequency) {
+    switch (getExternalFrequency()) {
       case 'W':
         return saving * 4;
       case 'K':
@@ -601,7 +574,7 @@ public class DebtDto {
 
   public int getMonthlyPaymentTerm() {
 
-    switch (this.externalFrequency) {
+    switch (getExternalFrequency()) {
       case 'W':
         return (int) Math.ceil(getAwardedPaymentTerms() / 4);
       case 'K':
@@ -638,18 +611,10 @@ public class DebtDto {
     this.progress = (double) remainingPaymentTerms / awardedPaymentTerms;
   }
 
-  public boolean editableDept() {
-    if (this.financialEntity.equals("KUBO FINANCIERO")) {
-      return false;
-    }
-
-    return true;
-  }
-
   private void validateStatusRate() {
     double amount = getAmountAwarded();
 
-    if (this.typeDebt == 'R') {
+    if (isRevolverCreditCard()) {
       amount = getBalance();
     }
 
@@ -661,7 +626,7 @@ public class DebtDto {
   public String toJSONString() {
     boolean showRevolverSaving = true;
 
-    if (getTypeDebt() == 'R') {
+    if (isRevolverCreditCard()) {
       showRevolverSaving = canBeSelected();
     }
 
@@ -675,7 +640,7 @@ public class DebtDto {
         ", \"kuboRate\":" + kuboRate +
         ", \"awardedPaymentTerms\":" + awardedPaymentTerms +
         ", \"remainingPaymentTerms\":" + remainingPaymentTerms +
-        ", \"externalFrequency\":\"" + externalFrequency +
+        ", \"externalFrequency\":\"" + getExternalFrequency() +
         "\", \"progress\":" + progress +
         ", \"startDate\":\"" + startDate +
         "\", \"typeDebt\": \"" + typeDebt +
@@ -706,7 +671,7 @@ public class DebtDto {
         ", \"tasa_kubo\":" + kuboRate +
         ", \"numero_pagos_otorgado\":" + awardedPaymentTerms +
         ", \"numero_pagos_restante\":" + remainingPaymentTerms +
-        ", \"frecuencia_externa\":\"" + externalFrequency +
+        ", \"frecuencia_externa\":\"" + getExternalFrequency() +
         "\", \"avance\":" + progress +
         ", \"fecha_inicio\":\"" + startDate +
         "\", \"tipo_deuda\": \"" + typeDebt +
