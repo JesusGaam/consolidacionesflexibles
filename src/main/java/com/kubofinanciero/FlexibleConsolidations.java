@@ -458,8 +458,8 @@ public class FlexibleConsolidations {
 
   public void setOriginalRateToOfferRate() {
     this.offerRate = getConsolidationOffer().getRate();
-    this.offerCommission = 0;
-    this.offerCommissionAmount = 0;
+    this.offerCommission = getConsolidationOffer().getCommissionRate();
+    this.offerCommissionAmount = GenericUtilities.round(LoanSimulator.cashCommission(getOfferAmount(), getOfferCommission(), false));
     this.offerKuboScore = getConsolidationOffer().getKuboScore();
   }
 
@@ -800,11 +800,10 @@ public class FlexibleConsolidations {
     if (ratesList.length > 0) {
       this.offerCommission = commissionsList[positionRate];
       this.offerKuboScore = kuboScores[positionRate];
-      this.offerCommissionAmount = GenericUtilities
-          .round(LoanSimulator.cashCommission(commissionsList[positionRate], getOfferAmount(), false));
+      this.offerCommissionAmount = GenericUtilities.round(LoanSimulator.cashCommission(getOfferAmount(), commissionsList[positionRate], false));
     } else {
-      this.offerCommission = 0;
-      this.offerCommissionAmount = 0;
+      this.offerCommission = getConsolidationOffer().getCommissionRate();
+      this.offerCommissionAmount = GenericUtilities.round(LoanSimulator.cashCommission(getOfferAmount(), getOfferCommission(), false));
       this.offerKuboScore = getConsolidationOffer().getKuboScore();
     }
 
@@ -958,8 +957,7 @@ public class FlexibleConsolidations {
     }
 
     validExceededAmount();
-    this.offerCommissionAmount = GenericUtilities.round(
-        LoanSimulator.cashCommission(this.offerAmount, getOfferCommission(), false));
+    this.offerCommissionAmount = GenericUtilities.round(LoanSimulator.cashCommission(getOfferAmount(), getOfferCommission(), false));
     this.totalAmountToReceive = GenericUtilities.round(this.offerAmount - this.offerCommissionAmount);
   }
 
