@@ -247,8 +247,8 @@ public class LoanSimulator {
     System.out.println("");
     System.out.println("CALCULAR TASA DE UN CREDITO");
     System.out.println("=====================================");
-    double estimedRate = LoanSimulator.rateOfPresentValue(126800, 579.38, 240);
-    double annualRate = LoanSimulator.annualRate(estimedRate, 'S', false);
+    double estimedRate = LoanSimulator.rateOfPresentValue(126800,4700, 32);
+    double annualRate = LoanSimulator.annualRate(estimedRate, 'M', false);
     System.out.println("Tasa estimada: " + estimedRate);
     System.out.println("Tasa anual: " + annualRate);
 

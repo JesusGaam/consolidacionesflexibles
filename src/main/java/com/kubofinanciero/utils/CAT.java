@@ -78,6 +78,12 @@ public class CAT {
 
   private Double estimateCAT(double cat) {
     Double value = 0d;
+
+    if (periodsPerYear == 360) {
+      value = (commission) + ((fee) / Math.pow(1 + cat / 100, (double) totalFees / periodsPerYear));
+      return (double) amount - value;
+    }
+
     for (double i = 0d; i <= this.totalFees; i++) {
       value += (i > 0 ? fee : commission) / Math.pow(1 + cat / 100, i / periodsPerYear);
     }
@@ -86,36 +92,40 @@ public class CAT {
   }
 
   public static void main(String[] args) {
-    Double cat1 = new CAT(245000, 11025.0, 10867.143576385397, 38, 12).getCAT();
-    System.out.println(cat1);
-    System.out.println((double) Math.round(cat1 * 10) / 10);
+    // Double cat1 = new CAT(245000, 11025.0, 10867.143576385397, 38, 12).getCAT();
+    // System.out.println(cat1);
+    // System.out.println((double) Math.round(cat1 * 10) / 10);
 
-    Double cat2 = new CAT(30000, 1000.0, 2000, 18, 12).getCAT();
-    System.out.println(cat2);
-    System.out.println((double) Math.round(cat2 * 10) / 10);
+    // Double cat2 = new CAT(30000, 1000.0, 2000, 18, 12).getCAT();
+    // System.out.println(cat2);
+    // System.out.println((double) Math.round(cat2 * 10) / 10);
 
-    Double cat3 = new CAT(180000, 8400.0, 8000, 36, 12).getCAT();
-    System.out.println(cat3);
-    System.out.println((double) Math.round(cat3 * 10) / 10);
+    // Double cat3 = new CAT(180000, 8400.0, 8000, 36, 12).getCAT();
+    // System.out.println(cat3);
+    // System.out.println((double) Math.round(cat3 * 10) / 10);
 
-    Double cat4 = new CAT(180000, 8400.0, 8000, 36, 24).getCAT();
-    System.out.println(cat4);
-    System.out.println((double) Math.round(cat4 * 10) / 10);
+    // Double cat4 = new CAT(180000, 8400.0, 8000, 36, 24).getCAT();
+    // System.out.println(cat4);
+    // System.out.println((double) Math.round(cat4 * 10) / 10);
 
-    Double cat5 = new CAT(15000, 100, 962.33, 24, 12).getCAT();
-    System.out.println(cat5);
-    System.out.println((double) Math.round(cat5 * 10) / 10);
+    // Double cat5 = new CAT(15000, 100, 962.33, 24, 12).getCAT();
+    // System.out.println(cat5);
+    // System.out.println((double) Math.round(cat5 * 10) / 10);
 
-    Double cat6 = new CAT(24000, 0, 925.05, 47, 12).getCAT();
-    System.out.println(cat6);
-    System.out.println((double) Math.round(cat6 * 10) / 10);
+    // Double cat6 = new CAT(24000, 0, 925.05, 47, 12).getCAT();
+    // System.out.println(cat6);
+    // System.out.println((double) Math.round(cat6 * 10) / 10);
 
-    Double cat7 = new CAT(10000, 0, 636, 20, 12).getCAT();
-    System.out.println(cat7);
-    System.out.println((double) Math.round(cat7 * 10) / 10);
+    // Double cat7 = new CAT(10000, 0, 636, 20, 12).getCAT();
+    // System.out.println(cat7);
+    // System.out.println((double) Math.round(cat7 * 10) / 10);
 
-    Double cat8 = new CAT(50000, 2155.1724, 2050.44, 24, 52).getCAT();
-    System.out.println(cat8);
-    System.out.println((double) Math.round(cat8 * 10) / 10);
+    // Double cat8 = new CAT(50000, 2155.1724, 2050.44, 24, 52).getCAT();
+    // System.out.println(cat8);
+    // System.out.println((double) Math.round(cat8 * 10) / 10);
+
+    Double cat9 = new CAT(12000, 580, 15500, 286, 360).getCAT();
+    System.out.println(cat9);
+    System.out.println((double) Math.round(cat9 * 10) / 10);
   }
 }
